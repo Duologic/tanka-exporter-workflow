@@ -14,11 +14,11 @@ ga.workflow.withOn('push')
   show:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withName('checkout')
-      + ga.job.step.withUses('actions/checkout@v4'),
+      ga.job.step.withUses('actions/checkout@v4'),
 
-      ga.job.step.withName('install tanka')
-      + ga.job.step.withUses('./.github/actions/install-tanka'),
+      ga.job.step.withUses('./.github/actions/install-tanka'),
+
+      ga.job.step.withRun('rm -rf manifests/*'),
 
       ga.job.step.withRun(|||
         tk export \

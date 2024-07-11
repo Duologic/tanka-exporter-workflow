@@ -3,10 +3,9 @@ jobs:
   show:
     runs-on: "ubuntu-latest"
     steps:
-      - name: "checkout"
-        uses: "actions/checkout@v4"
-      - name: "install tanka"
-        uses: "./.github/actions/install-tanka"
+      - uses: "actions/checkout@v4"
+      - uses: "./.github/actions/install-tanka"
+      - run: "rm -rf manifests/*"
       - run: |
           tk export \
           --recursive \
