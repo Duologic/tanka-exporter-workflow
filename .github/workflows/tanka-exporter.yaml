@@ -15,6 +15,10 @@ jobs:
           environments/
         working-directory: "jsonnet"
       - env:
+          PR: "${{ github.event.number }}"
+        if: "${{ github.event_name == 'pull_request' }}"
+        run: "git checkout -b pr-$PR"
+      - env:
           GIT_AUTHOR_EMAIL: "${{ github.event.pusher.email }}"
           GIT_AUTHOR_NAME: "${{ github.event.pusher.name }}"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
@@ -25,7 +29,13 @@ jobs:
           git log -1 --format=fuller
           git show HEAD
           git push
+      - if: "${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}"
+        run: "git push"
 "on":
+  pull_request:
+    paths:
+      - "jsonnet/**"
+      - ".github/**"
   push:
     paths:
       - "jsonnet/**"

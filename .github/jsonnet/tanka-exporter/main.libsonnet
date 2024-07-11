@@ -9,10 +9,13 @@ local exportFormat = std.strReplace(|||
   {{.kind}}-{{.metadata.name}}
 |||, '\n', '');
 
-ga.workflow.on.push.withPaths([
+local paths = [
   'jsonnet/**',
   '.github/**',
-])
+];
+
+ga.workflow.on.push.withPaths(paths)
++ ga.workflow.on.pull_request.withPaths(paths)
 + ga.workflow.permissions.withContents('write')  // allow git push
 + ga.workflow.withJobs({
   show:
@@ -34,6 +37,10 @@ ga.workflow.on.push.withPaths([
       ||| % exportFormat,)
       + ga.job.step.withWorkingDirectory('jsonnet'),
 
+      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      + ga.job.step.withRun('git checkout -b pr-$PR')
+      + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
+
       ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
@@ -47,5 +54,8 @@ ga.workflow.on.push.withPaths([
         GIT_COMMITTER_NAME: 'github-actions[bot]',
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
+
+      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}")
+      + ga.job.step.withRun('git push'),
     ]),
 })
