@@ -41,7 +41,11 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.step.withRun(|||
+      ga.job.step.withRun('test -z "$(git status --porcelain manifests/)"')
+      + ga.job.step.withShell('bash'),
+
+      ga.job.step.withIf('failure()')
+      + ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
         git log -1 --format=fuller
