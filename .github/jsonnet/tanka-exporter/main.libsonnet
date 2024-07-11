@@ -33,7 +33,7 @@ ga.workflow.withOn('push')
       ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
-        git log -1
+        git log -1 --format=fuller
         git show HEAD
       |||)
       + ga.job.step.withEnv({
