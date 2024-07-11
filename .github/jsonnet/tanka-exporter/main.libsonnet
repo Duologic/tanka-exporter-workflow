@@ -9,7 +9,10 @@ local exportFormat = std.strReplace(|||
   {{.kind}}-{{.metadata.name}}
 |||, '\n', '');
 
-ga.workflow.withOn('push')
+ga.workflow.on.push.withPaths([
+  'jsonnet/**',
+  '.github/**',
+])
 + ga.workflow.withJobs({
   show:
     ga.job.withRunsOn('ubuntu-latest')

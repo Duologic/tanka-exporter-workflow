@@ -24,4 +24,8 @@ jobs:
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
-"on": "push"
+"on":
+  push:
+    paths:
+      - "jsonnet/**"
+      - ".github/**"
