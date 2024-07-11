@@ -35,6 +35,6 @@ ga.workflow.withOn('push')
       )
       + ga.job.step.withWorkingDirectory('jsonnet'),
 
-      ga.job.step.withRun('ls _out'),
+      ga.job.step.withRun('find _out'),
     ]),
 })
