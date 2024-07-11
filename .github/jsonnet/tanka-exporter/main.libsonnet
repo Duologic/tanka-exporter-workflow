@@ -13,6 +13,7 @@ ga.workflow.on.push.withPaths([
   'jsonnet/**',
   '.github/**',
 ])
++ ga.workflow.permissions.withContents('write')  // allow git push
 + ga.workflow.withJobs({
   show:
     ga.job.withRunsOn('ubuntu-latest')
