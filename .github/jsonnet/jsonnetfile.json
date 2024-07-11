@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/crdsonnet/github-actions-libsonnet.git",
+          "subdir": ""
+        }
+      },
+      "version": "main"
+    }
+  ],
+  "legacyImports": true
+}

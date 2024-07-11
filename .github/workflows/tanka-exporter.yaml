@@ -1,0 +1,11 @@
+# Generated with `make gen`
+jobs:
+  show:
+    steps:
+      - name: "checkout"
+        uses: "actions/checkout@v4"
+      - name: "install tanka"
+        uses: "./.github/actions/install-tanka"
+      - run: "tk show"
+        working-directory: "jsonnet/"
+"on": "push"
