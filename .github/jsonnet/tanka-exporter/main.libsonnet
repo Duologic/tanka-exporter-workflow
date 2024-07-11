@@ -3,7 +3,8 @@ local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet'
 ga.workflow.withOn('push')
 + ga.workflow.withJobs({
   show:
-    ga.job.withSteps([
+    ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withSteps([
       ga.job.step.withName('checkout')
       + ga.job.step.withUses('actions/checkout@v4'),
 
@@ -15,4 +16,3 @@ ga.workflow.withOn('push')
 
     ]),
 })
-
