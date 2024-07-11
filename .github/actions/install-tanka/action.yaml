@@ -15,7 +15,7 @@ runs:
       id: restore
       uses: actions/cache/restore@v4
       with:
-        path: /usr/bin
+        path: ${{ github.workspace }}/bin
         key: tk-linux-amd64-${{ inputs.version }}
 
     - name: Fetch Github Release Asset
@@ -26,24 +26,24 @@ runs:
         repo: "grafana/tanka"
         version: "tags/v${{ inputs.version }}"
         file: "tk-linux-amd64"
-        target: /usr/bin/tk
+        target: ${{ github.workspace }}/bin/tk
 
     - name: chmod
       id: chmod
       if: steps.fetch_asset.outcome == 'success'
       shell: sh
       run: |
-        chmod +x /usr/bin/tk
+        chmod +x ${{ github.workspace }}/bin/tk
 
     - name: Save to cache
       id: save
       if: steps.gunzip.outcome == 'success'
       uses: actions/cache/save@v4
       with:
-        path: /usr/bin
+        path: ${{ github.workspace }}/bin
         key: ${{ steps.restore.outputs.cache-primary-key }}
 
     - name: Add binary to path
       shell: sh
       run: |
-        echo "/usr/bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
