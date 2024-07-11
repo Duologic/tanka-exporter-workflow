@@ -7,7 +7,7 @@ jobs:
         uses: "actions/checkout@v4"
       - name: "install tanka"
         uses: "./.github/actions/install-tanka"
-      - run: "tk export -r ../_out ."
+      - run: "tk export --recursive --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' ../_out environments/ "
         working-directory: "jsonnet"
       - run: "ls _out"
 "on": "push"
