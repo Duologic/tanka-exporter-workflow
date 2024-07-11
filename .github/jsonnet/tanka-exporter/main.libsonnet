@@ -11,8 +11,9 @@ ga.workflow.withOn('push')
       ga.job.step.withName('install tanka')
       + ga.job.step.withUses('./.github/actions/install-tanka'),
 
-      ga.job.step.withRun('tk show')
-      + ga.job.step.withWorkingDirectory('jsonnet/'),
+      ga.job.step.withRun('tk export -r ../_out .')
+      + ga.job.step.withWorkingDirectory('jsonnet'),
 
+      ga.job.step.withRun('ls _out'),
     ]),
 })
