@@ -38,6 +38,7 @@ ga.workflow.on.push.withPaths([
         git commit -m "generated"
         git log -1 --format=fuller
         git show HEAD
+        git push
       |||)
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.event.pusher.name }}',

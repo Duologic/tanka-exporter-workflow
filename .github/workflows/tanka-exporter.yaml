@@ -24,6 +24,7 @@ jobs:
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
+          git push
 "on":
   push:
     paths:
