@@ -7,7 +7,22 @@ jobs:
         uses: "actions/checkout@v4"
       - name: "install tanka"
         uses: "./.github/actions/install-tanka"
-      - run: "tk export --recursive --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' ../_out environments/ "
+      - run: |
+          tk export \
+          --recursive \
+          --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' \
+          --merge-strategy=fail-on-conflicts \
+          ../manifests/ \
+          environments/
         working-directory: "jsonnet"
-      - run: "find _out"
+      - env:
+          GIT_AUTHOR_EMAIL: "${{ github.event.pusher.email }}"
+          GIT_AUTHOR_NAME: "${{ github.event.pusher.name }}"
+          GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+          GIT_COMMITTER_NAME: "github-actions[bot]"
+        run: |
+          git add manifests/
+          git commit -m "generated"
+          git log -1
+          git show HEAD
 "on": "push"

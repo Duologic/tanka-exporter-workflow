@@ -20,21 +20,27 @@ ga.workflow.withOn('push')
       ga.job.step.withName('install tanka')
       + ga.job.step.withUses('./.github/actions/install-tanka'),
 
-      ga.job.step.withRun(
-        std.strReplace(
-          |||
-            tk export
-            --recursive
-            --format '%s'
-            ../_out
-            environments/
-          ||| % exportFormat,
-          '\n',
-          ' '
-        )
-      )
+      ga.job.step.withRun(|||
+        tk export \
+        --recursive \
+        --format '%s' \
+        --merge-strategy=fail-on-conflicts \
+        ../manifests/ \
+        environments/
+      ||| % exportFormat,)
       + ga.job.step.withWorkingDirectory('jsonnet'),
 
-      ga.job.step.withRun('find _out'),
+      ga.job.step.withRun(|||
+        git add manifests/
+        git commit -m "generated"
+        git log -1
+        git show HEAD
+      |||)
+      + ga.job.step.withEnv({
+        GIT_AUTHOR_NAME: '${{ github.event.pusher.name }}',
+        GIT_AUTHOR_EMAIL: '${{ github.event.pusher.email }}',
+        GIT_COMMITTER_NAME: 'github-actions[bot]',
+        GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
+      }),
     ]),
 })
