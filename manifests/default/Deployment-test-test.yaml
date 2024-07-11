@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test
+  name: test-test
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: test
+      name: test-test
   template:
     metadata:
       labels:
-        name: test
+        name: test-test
     spec:
       containers: []
