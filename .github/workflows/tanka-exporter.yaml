@@ -22,7 +22,7 @@ jobs:
       - env:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
-        run: "git checkout -b pr-$PR"
+        run: "git branch -D pr-$PR && git checkout -b pr-$PR"
       - env:
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           GIT_AUTHOR_NAME: "${{ github.actor }}"
