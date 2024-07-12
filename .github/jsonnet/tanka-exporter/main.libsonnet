@@ -23,7 +23,10 @@ ga.workflow.on.push.withPaths(paths)
   show:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withUses('actions/checkout@v4'),
+      ga.job.step.withUses('actions/checkout@v4')
+      + ga.job.step.withWith({
+        'fetch-depth': 100,
+      }),
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
 

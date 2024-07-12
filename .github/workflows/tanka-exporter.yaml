@@ -4,6 +4,8 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 100
       - uses: "./.github/actions/install-tanka"
       - run: "rm -rf manifests/*"
       - id: "export"
