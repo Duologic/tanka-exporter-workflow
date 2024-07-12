@@ -25,7 +25,10 @@ ga.workflow.on.push.withPaths(paths)
   export:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withUses('actions/checkout@v4'),
+      ga.job.step.withUses('actions/checkout@v4')
+      + ga.job.step.withWith({
+        ref: '${{ github.event.pull_request.head.sha }}',
+      }),
 
       ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
@@ -65,7 +68,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
-        git commit -m "$(git -C ../ show -s --format"%%s" ${{ github.event.pull_request.head.sha }})\n$MESSAGE"
+        git commit -m "$(git -C ../ show -s --format"%%s")\n$MESSAGE"
         git log -1 --format=fuller
         git show HEAD
         git config --global push.autoSetupRemote true
@@ -78,8 +81,6 @@ ga.workflow.on.push.withPaths(paths)
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
 
         MESSAGE: |||
-          ${{ github.event.head_commit.message }}
-
           --
 
           - Event: ${{ github.event_name }}
