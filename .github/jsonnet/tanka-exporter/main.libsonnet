@@ -36,6 +36,7 @@ ga.workflow.on.push.withPaths(paths)
         ../manifests/ \
         environments/
         if [[ -n $(git status --porcelain ../manifests/) ]]; then
+            echo "changes found"
             echo "changes=true" >> $GITHUB_OUTPUT
         fi
       ||| % exportFormat,)
