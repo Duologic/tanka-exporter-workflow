@@ -48,7 +48,8 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
+      ga.job.step.withId('commit')
+      + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
