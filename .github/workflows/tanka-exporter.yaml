@@ -15,25 +15,15 @@ jobs:
           path: "_manifests"
           ref: "main"
       - uses: "./.github/actions/install-tanka"
-      - env:
-          BASE_SHA: "${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
-        id: "partial"
-        run: |
-          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
-          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-          echo $ARGS
-        working-directory: "jsonnet"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
       - env:
-          BASE_SHA: "${{ github.event.pull_request.base.sha }}"
+          BASE_REF: "${{ github.base_ref }}"
           BULK: "${{ github.event_name == 'workflow_dispatch' }}"
-          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
         id: "export"
         run: |
-          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+          eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           
           if [[ $BULK = 'true' ]]; then

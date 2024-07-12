@@ -40,18 +40,6 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
-      ga.job.step.withId('partial')
-      + ga.job.step.withWorkingDirectory('jsonnet')
-      + ga.job.step.withRun(|||
-        eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
-        ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-        echo $ARGS
-      |||)
-      + ga.job.step.withEnv({
-        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
-        HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
-      }),
-
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
@@ -60,7 +48,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
         |||
-          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+          eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
 
           if [[ $BULK = 'true' ]]; then
@@ -83,8 +71,7 @@ ga.workflow.on.push.withPaths(paths)
         ||| % exportFormat
       )
       + ga.job.step.withEnv({
-        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
-        HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
+        BASE_REF: '${{ github.base_ref }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
