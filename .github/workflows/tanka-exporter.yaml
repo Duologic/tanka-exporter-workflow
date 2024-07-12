@@ -1,20 +1,30 @@
 # Generated with `make gen`
+concurrency:
+  cancel-in-progress: "${{ github.ref != 'master' }}"
+  group: "${{ github.workflow }}-${{ github.ref }}"
 jobs:
-  show:
+  export:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v4"
+        with:
+          path: "_manifests"
+          ref: "main"
       - uses: "./.github/actions/install-tanka"
       - run: "rm -rf manifests/*"
+        working-directory: "_manifests"
       - id: "export"
         run: |
           tk export \
           --recursive \
           --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' \
           --merge-strategy=fail-on-conflicts \
-          ../manifests/ \
+          ../_manifests/manifests/ \
           environments/
-          if [[ -n $(git status --porcelain ../manifests/) ]]; then
+          
+          cd ../manifests
+          if [[ -n $(git status --porcelain) ]]; then
               echo "changes found"
               echo "changes=true" >> $GITHUB_OUTPUT
           fi
@@ -23,27 +33,49 @@ jobs:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
         run: "git checkout -b pr-$PR"
+        working-directory: "_manifests"
       - env:
-          GIT_AUTHOR_EMAIL: "${{ github.event.pusher.email }}"
-          GIT_AUTHOR_NAME: "${{ github.event.pusher.name }}"
+          GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
+        id: "commit"
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
-      - if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+          git config --global push.autoSetupRemote true
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        working-directory: "_manifests"
+      - env:
+          PR: "${{ github.event.number }}"
+        if: "${{ github.event_name == 'pull_request' }}"
+        run: "git push -u -f origin pr-$PR"
+        working-directory: "_manifests"
+      - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         run: "git push"
+        working-directory: "_manifests"
+      - if: "${{ github.event_name == 'pull_request' }}"
+        uses: "thollander/actions-comment-pull-request@v2"
+        with:
+          comment_tag: "${{ github.workflow }}-difflinks"
+          message: |
+            permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
+            relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
+          mode: "recreate"
 "on":
   pull_request:
     paths:
       - "jsonnet/**"
       - ".github/**"
   push:
+    branches:
+      - "main"
     paths:
       - "jsonnet/**"
       - ".github/**"
 permissions:
   contents: "write"
+  pull-requests: "write"
