@@ -45,7 +45,7 @@ ga.workflow.on.push.withPaths(paths)
         --merge-strategy=fail-on-conflicts \
         ../_manifests/manifests/ \
         environments/
-        if [[ -n $(git status --porcelain ../manifests/) ]]; then
+        if [[ -n $(git status --porcelain ../_manifests/manifests/) ]]; then
             echo "changes found"
             echo "changes=true" >> $GITHUB_OUTPUT
         fi
