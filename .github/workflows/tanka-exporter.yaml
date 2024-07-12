@@ -34,6 +34,10 @@ jobs:
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
+      - run: |
+          echo ${{ steps.export.outputs.changes }}
+          echo ${{ github.event_name }}
+          echo ${{ github.ref == 'refs/head/master' }}
       - if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/master' }}"
         run: "git push"
 "on":

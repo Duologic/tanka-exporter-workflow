@@ -60,6 +60,12 @@ ga.workflow.on.push.withPaths(paths)
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
 
+      ga.job.step.withRun(|||
+        echo ${{ steps.export.outputs.changes }}
+        echo ${{ github.event_name }}
+        echo ${{ github.ref == 'refs/head/master' }}
+      |||),
+
       ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/master' }}")
       + ga.job.step.withRun('git push'),
     ]),
