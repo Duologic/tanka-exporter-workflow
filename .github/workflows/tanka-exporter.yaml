@@ -19,7 +19,9 @@ jobs:
           --merge-strategy=fail-on-conflicts \
           ../_manifests/manifests/ \
           environments/
-          if [[ -n $(git status --porcelain ../_manifests/manifests/) ]]; then
+          
+          cd ../manifests
+          if [[ -n $(git status --porcelain) ]]; then
               echo "changes found"
               echo "changes=true" >> $GITHUB_OUTPUT
           fi
