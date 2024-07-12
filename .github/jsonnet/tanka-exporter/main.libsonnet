@@ -76,7 +76,6 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: |||
-          ### diff
           permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
           relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
         |||,
