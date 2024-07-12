@@ -38,6 +38,16 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
+      ga.job.step.withId('partial')
+      + ga.job.step.withWorkingDirectory('jsonnet')
+      + ga.job.step.withRun(|||
+        git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf
+      |||)
+      + ga.job.step.withEnv({
+        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
+        HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
+      }),
+
       ga.job.step.withRun('rm -rf manifests/*')
       + ga.job.step.withWorkingDirectory('_manifests'),
 
