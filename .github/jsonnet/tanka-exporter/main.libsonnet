@@ -53,6 +53,7 @@ ga.workflow.on.push.withPaths(paths)
         git commit -m "generated"
         git log -1 --format=fuller
         git show HEAD
+        git config --global push.autoSetupRemote true
         git push
       |||)
       + ga.job.step.withEnv({

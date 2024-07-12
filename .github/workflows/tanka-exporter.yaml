@@ -34,6 +34,7 @@ jobs:
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
+          git config --global push.autoSetupRemote true
           git push
 "on":
   pull_request:
