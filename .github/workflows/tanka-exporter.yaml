@@ -24,6 +24,7 @@ jobs:
       - env:
           BASE_SHA: "${{ github.event.pull_request.base.sha }}"
           BEFORE: "${{ github.event.before }}"
+          EVENT: "${{ github.event_name }}"
         id: "base"
         run: |
           if [ $EVENT = 'pull_request']; then
