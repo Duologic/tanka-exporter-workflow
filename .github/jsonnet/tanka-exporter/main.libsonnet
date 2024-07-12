@@ -17,6 +17,7 @@ local paths = [
 ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
++ ga.workflow.on.withWorkflowDispatch({})
 + ga.workflow.permissions.withPullRequests('write')  // allow pr comments
 + ga.workflow.permissions.withContents('write')  // allow git push
 + ga.workflow.concurrency.withGroup('${{ github.workflow }}-${{ github.ref }}')  // only run this workflow once per ref
@@ -51,16 +52,20 @@ ga.workflow.on.push.withPaths(paths)
         HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
       }),
 
-      ga.job.step.withRun('rm -rf manifests/*/')
+      ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
+      + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
 
       ga.job.step.withId('export')
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
         |||
-          ARGS="environments/ --merge-strategy=fail-on-conflicts"
           eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+
+          if [[ $BULK = 'true' ]]; then
+            ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          fi
 
           echo $ARGS
 
@@ -80,6 +85,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withEnv({
         BASE_SHA: '${{ github.event.pull_request.base.sha }}',
         HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
+        BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
 
