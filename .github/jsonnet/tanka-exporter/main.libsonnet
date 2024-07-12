@@ -38,6 +38,11 @@ ga.workflow.on.push.withPaths(paths)
         path: '_manifests',
       }),
 
+      ga.job.step.withEnv({
+        GITHUB_CONTEXT: '${{ toJson(github) }}',
+      })
+      + ga.job.step.withRun('echo "$GITHUB_CONTEXT"'),
+
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
