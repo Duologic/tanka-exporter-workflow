@@ -64,11 +64,11 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
         |||
-          eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
-          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-
           if [[ $BULK = 'true' ]]; then
             ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          else
+            eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+            ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           fi
 
           echo $ARGS

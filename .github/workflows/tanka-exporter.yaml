@@ -36,11 +36,11 @@ jobs:
         id: "export"
         if: "${{ steps.diff.outputs.doExport == 'true' }}"
         run: |
-          eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
-          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-          
           if [[ $BULK = 'true' ]]; then
             ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          else
+            eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+            ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           fi
           
           echo $ARGS
