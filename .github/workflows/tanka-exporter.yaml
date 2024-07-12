@@ -24,7 +24,7 @@ jobs:
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           echo $ARGS
         working-directory: "jsonnet"
-      - run: "rm -rf manifests/*"
+      - run: "rm -rf manifests/*/"
         working-directory: "_manifests"
       - env:
           BASE_SHA: "${{ github.event.pull_request.base.sha }}"
@@ -70,7 +70,6 @@ jobs:
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git add manifests.json
           git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
           git log -1 --format=fuller
           git config --global push.autoSetupRemote true
