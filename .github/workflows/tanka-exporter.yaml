@@ -7,6 +7,8 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
+        with:
+          ref: "${{ github.event.pull_request.head.sha }}"
       - uses: "actions/checkout@v4"
         with:
           path: "_manifests"
@@ -39,13 +41,19 @@ jobs:
           GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
+          MESSAGE: |
+            
+            --
+            
+            - Event: ${{ github.event_name }}
+            - Branch: ${{ github.base_ref }}
+            - Build link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         id: "commit"
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git commit -m "generated"
+          git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
           git log -1 --format=fuller
-          git show HEAD
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
         working-directory: "_manifests"
