@@ -9,7 +9,6 @@ jobs:
       - uses: "actions/checkout@v4"
         with:
           fetch-depth: 100
-          ref: "${{ github.event.pull_request.head.sha }}"
       - uses: "actions/checkout@v4"
         with:
           path: "_manifests"
@@ -19,27 +18,27 @@ jobs:
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
       - env:
-          BASE_REF: "${{ github.event.before }}"
           BULK: "${{ github.event_name == 'workflow_dispatch' }}"
+          SHA: "${{ github.sha }}"
         id: "diff"
         run: |
           if [ $BULK = 'true' ]; then
               echo "run as bulk"
               echo "doExport=true" >> $GITHUB_OUTPUT
-          elif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
+          elif [[ -n $(git diff --name-status --no-renames $SHA jsonnet/) ]]; then
               echo "changes found"
               echo "doExport=true" >> $GITHUB_OUTPUT
           fi
       - env:
-          BASE_REF: "${{ github.event.before }}"
           BULK: "${{ github.event_name == 'workflow_dispatch' }}"
+          SHA: "${{ github.sha }}"
         id: "export"
         if: "${{ steps.diff.outputs.doExport == 'true' }}"
         run: |
           if [[ $BULK = 'true' ]]; then
             ARGS="environments/ --merge-strategy=fail-on-conflicts"
           else
-            eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+            eval $(git diff --name-status --no-renames $SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           fi
           
@@ -68,6 +67,7 @@ jobs:
           GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
+          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
           MESSAGE: |
             
             --
@@ -79,7 +79,7 @@ jobs:
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
+          git commit -m "$(git -C ../ show -s --format=%B $HEAD_SHA)$MESSAGE"
           git log -1 --format=fuller
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT

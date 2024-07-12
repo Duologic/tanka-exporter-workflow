@@ -28,7 +28,7 @@ ga.workflow.on.push.withPaths(paths)
     + ga.job.withSteps([
       ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
-        ref: '${{ github.event.pull_request.head.sha }}',
+        //ref: '${{ github.event.pull_request.head.sha }}',
         'fetch-depth': 100,
       }),
 
@@ -49,13 +49,13 @@ ga.workflow.on.push.withPaths(paths)
         if [ $BULK = 'true' ]; then
             echo "run as bulk"
             echo "doExport=true" >> $GITHUB_OUTPUT
-        elif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
+        elif [[ -n $(git diff --name-status --no-renames $SHA jsonnet/) ]]; then
             echo "changes found"
             echo "doExport=true" >> $GITHUB_OUTPUT
         fi
       |||)
       + ga.job.step.withEnv({
-        BASE_REF: '${{ github.event.before }}',
+        SHA: '${{ github.sha }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
@@ -67,7 +67,7 @@ ga.workflow.on.push.withPaths(paths)
           if [[ $BULK = 'true' ]]; then
             ARGS="environments/ --merge-strategy=fail-on-conflicts"
           else
-            eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+            eval $(git diff --name-status --no-renames $SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           fi
 
@@ -88,7 +88,7 @@ ga.workflow.on.push.withPaths(paths)
         ||| % exportFormat
       )
       + ga.job.step.withEnv({
-        BASE_REF: '${{ github.event.before }}',
+        SHA: '${{ github.sha }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
@@ -102,12 +102,14 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
-        git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
+        git commit -m "$(git -C ../ show -s --format=%B $HEAD_SHA)$MESSAGE"
         git log -1 --format=fuller
         git config --global push.autoSetupRemote true
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       |||)
       + ga.job.step.withEnv({
+        HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
+
         GIT_AUTHOR_NAME: '${{ github.actor }}',
         GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
         GIT_COMMITTER_NAME: 'github-actions[bot]',
