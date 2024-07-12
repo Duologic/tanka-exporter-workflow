@@ -35,8 +35,13 @@ jobs:
           git log -1 --format=fuller
           git show HEAD
           git config --global push.autoSetupRemote true
-          git push
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+      - env:
+          PR: "${{ github.event.number }}"
+        if: "${{ github.event_name == 'pull_request' }}"
+        run: "git push -u -f origin pr-$PR"
+      - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+        run: "git push"
       - if: "${{ github.event_name == 'pull_request' }}"
         uses: "thollander/actions-comment-pull-request@v2"
         with:

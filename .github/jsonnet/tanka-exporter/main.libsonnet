@@ -54,7 +54,6 @@ ga.workflow.on.push.withPaths(paths)
         git log -1 --format=fuller
         git show HEAD
         git config --global push.autoSetupRemote true
-        git push
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       |||)
       + ga.job.step.withEnv({
@@ -64,13 +63,12 @@ ga.workflow.on.push.withPaths(paths)
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
 
-      //return fmt.Sprintf(
-      //	"%d files changed in kube-manifests. [permalink](https://github.com/grafana/kube-manifests/compare/%s...%s) ([relative](https://github.com/grafana/kube-manifests/compare/master...%s))",
-      //	m.changeCount,
-      //	m.compareInfo.MasterRev,
-      //	m.compareInfo.BranchRev,
-      //	m.compareInfo.BranchName,
-      //)
+      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      + ga.job.step.withRun('git push -u -f origin pr-$PR')
+      + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
+
+      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}")
+      + ga.job.step.withRun('git push'),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
