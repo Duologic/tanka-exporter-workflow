@@ -42,7 +42,9 @@ ga.workflow.on.push.withPaths(paths)
       ga.job.step.withId('partial')
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(|||
-        git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf
+        eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+        ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+        echo $ARGS
       |||)
       + ga.job.step.withEnv({
         BASE_SHA: '${{ github.event.pull_request.base.sha }}',

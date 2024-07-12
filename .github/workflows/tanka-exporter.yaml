@@ -20,7 +20,9 @@ jobs:
           HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
         id: "partial"
         run: |
-          git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf
+          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+          echo $ARGS
         working-directory: "jsonnet"
       - run: "rm -rf manifests/*"
         working-directory: "_manifests"
