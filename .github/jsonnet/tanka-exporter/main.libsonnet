@@ -49,19 +49,31 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
 
+      ga.job.step.withId('base')
+      + ga.job.step.withRun(|||
+        if [ $EVENT = 'pull_request']; then
+            echo "base=$BASE_SHA" >> $GITHUB_OUTPUT
+        else
+            echo "base=$BEFORE" >> $GITHUB_OUTPUT
+        fi
+      |||)
+      + ga.job.step.withEnv({
+        BEFORE: '${{ github.event.before }}',
+        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
+      }),
+
       ga.job.step.withId('diff')
       + ga.job.step.withRun(|||
-        git diff --name-status --no-renames $SHA jsonnet/
         if [ $BULK = 'true' ]; then
             echo "run as bulk"
             echo "doExport=true" >> $GITHUB_OUTPUT
-        elif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
+        elif [[ -n $(git diff --name-status --no-renames $BASE...HEAD jsonnet/) ]]; then
             echo "changes found"
             echo "doExport=true" >> $GITHUB_OUTPUT
         fi
       |||)
       + ga.job.step.withEnv({
-        BASE_REF: '${{ github.event.before }}',
+        BASE: '${{ steps.base.outputs.base }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
@@ -73,7 +85,7 @@ ga.workflow.on.push.withPaths(paths)
           if [[ $BULK = 'true' ]]; then
             ARGS="environments/ --merge-strategy=fail-on-conflicts"
           else
-            eval $(git diff --name-status --no-renames $BASE_REF...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+            eval $(git diff --name-status --no-renames $BASE...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           fi
 
@@ -94,7 +106,7 @@ ga.workflow.on.push.withPaths(paths)
         ||| % exportFormat
       )
       + ga.job.step.withEnv({
-        BASE_REF: '${{ github.event.before }}',
+        BASE: '${{ steps.base.outputs.base }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
