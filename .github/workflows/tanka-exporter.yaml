@@ -36,6 +36,13 @@ jobs:
           git show HEAD
           git config --global push.autoSetupRemote true
           git push
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+      - if: "${{ github.event_name == 'pull_request' }}"
+        uses: "thollander/actions-comment-pull-request@v2"
+        with:
+          message: |
+            permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
+            relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
 "on":
   pull_request:
     paths:

@@ -55,6 +55,7 @@ ga.workflow.on.push.withPaths(paths)
         git show HEAD
         git config --global push.autoSetupRemote true
         git push
+        echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       |||)
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.actor }}',
@@ -62,5 +63,23 @@ ga.workflow.on.push.withPaths(paths)
         GIT_COMMITTER_NAME: 'github-actions[bot]',
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
+
+      //return fmt.Sprintf(
+      //	"%d files changed in kube-manifests. [permalink](https://github.com/grafana/kube-manifests/compare/%s...%s) ([relative](https://github.com/grafana/kube-manifests/compare/master...%s))",
+      //	m.changeCount,
+      //	m.compareInfo.MasterRev,
+      //	m.compareInfo.BranchRev,
+      //	m.compareInfo.BranchName,
+      //)
+
+      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
+      + ga.job.step.withWith({
+        message: |||
+          permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
+          relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
+        |||,
+      }),
+
     ]),
 })
