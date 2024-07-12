@@ -53,19 +53,19 @@ ga.workflow.on.push.withPaths(paths)
         echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
       |||)
       + ga.job.step.withEnv({
-        GIT_AUTHOR_NAME: '${{ github.event.pull_request.user.name }}',
-        GIT_AUTHOR_EMAIL: '${{ github.event.pull_request.user.email }}',
+        GIT_AUTHOR_NAME: '${{ github.event.user.name }}',
+        GIT_AUTHOR_EMAIL: '${{ github.event.user.email }}',
       }),
 
-      ga.job.withIf("${{ github.event_name == 'push' }}")
-      + ga.job.step.withRun(|||
-        echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
-        echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-      |||)
-      + ga.job.step.withEnv({
-        GIT_AUTHOR_NAME: '${{ github.event.push.user.name }}',
-        GIT_AUTHOR_EMAIL: '${{ github.event.push.user.email }}',
-      }),
+      //ga.job.withIf("${{ github.event_name == 'push' }}")
+      //+ ga.job.step.withRun(|||
+      //  echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
+      //  echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
+      //|||)
+      //+ ga.job.step.withEnv({
+      //  GIT_AUTHOR_NAME: '${{ github.event.push.name }}',
+      //  GIT_AUTHOR_EMAIL: '${{ github.event.push.email }}',
+      //}),
 
       ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withRun(|||

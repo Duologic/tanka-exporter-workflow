@@ -24,16 +24,9 @@ jobs:
         if: "${{ github.event_name == 'pull_request' }}"
         run: "git checkout -b pr-$PR"
       - env:
-          GIT_AUTHOR_EMAIL: "${{ github.event.pull_request.user.email }}"
-          GIT_AUTHOR_NAME: "${{ github.event.pull_request.user.name }}"
+          GIT_AUTHOR_EMAIL: "${{ github.event.user.email }}"
+          GIT_AUTHOR_NAME: "${{ github.event.user.name }}"
         if: "${{ github.event_name == 'pull_request' }}"
-        run: |
-          echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
-          echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-      - env:
-          GIT_AUTHOR_EMAIL: "${{ github.event.push.user.email }}"
-          GIT_AUTHOR_NAME: "${{ github.event.push.user.name }}"
-        if: "${{ github.event_name == 'push' }}"
         run: |
           echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
           echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
