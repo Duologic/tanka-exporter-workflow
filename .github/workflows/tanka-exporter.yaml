@@ -46,7 +46,7 @@ jobs:
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git commit -m "$(git log -1 --pretty=%B)
+          git commit -m "$(git log -C .. -1 --pretty=%B)
           
           --
           

@@ -61,7 +61,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       local commitMessage = |||
-        $(git log -1 --pretty=%B)
+        $(git log -C .. -1 --pretty=%B)
 
         --
 
