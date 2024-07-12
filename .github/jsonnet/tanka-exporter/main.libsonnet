@@ -17,6 +17,7 @@ local paths = [
 ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
++ ga.workflow.permissions.withPullRequests('write')
 + ga.workflow.permissions.withContents('write')  // allow git push
 + ga.workflow.withJobs({
   show:
