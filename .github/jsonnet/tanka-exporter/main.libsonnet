@@ -46,6 +46,7 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withId('diff')
       + ga.job.step.withRun(|||
+        git diff --name-status --no-renames $SHA jsonnet/
         if [ $BULK = 'true' ]; then
             echo "run as bulk"
             echo "doExport=true" >> $GITHUB_OUTPUT
