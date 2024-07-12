@@ -27,13 +27,17 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withRun('rm -rf manifests/*'),
 
-      ga.job.step.withRun(|||
+      ga.job.step.withId('export')
+      + ga.job.step.withRun(|||
         tk export \
         --recursive \
         --format '%s' \
         --merge-strategy=fail-on-conflicts \
         ../manifests/ \
         environments/
+        if [[ -n $(git status --porcelain manifests/) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+        fi
       ||| % exportFormat,)
       + ga.job.step.withWorkingDirectory('jsonnet'),
 
@@ -41,16 +45,12 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.step.withRun('test -z "$(git status --porcelain manifests/)"')
-      + ga.job.step.withShell('bash'),
-
-      ga.job.step.withIf('failure()')
+      ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
         git log -1 --format=fuller
         git show HEAD
-        git push
       |||)
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.event.pusher.name }}',
@@ -59,7 +59,7 @@ ga.workflow.on.push.withPaths(paths)
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
 
-      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/head/master' }}")
+      ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/master' }}")
       + ga.job.step.withRun('git push'),
     ]),
 })
