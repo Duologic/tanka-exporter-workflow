@@ -49,8 +49,8 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
       + ga.job.step.withRun(|||
-        echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
-        echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
+        echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_ENV
+        echo "GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
       |||)
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.actor }}',
