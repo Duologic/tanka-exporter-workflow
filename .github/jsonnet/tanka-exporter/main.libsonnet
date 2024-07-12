@@ -46,10 +46,10 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withId('diff')
       + ga.job.step.withRun(|||
-        if [[ $BULK = 'true' ]]; then
+        if [ $BULK = 'true' ]; then
             echo "run as bulk"
             echo "doExport=true" >> $GITHUB_OUTPUT
-        elsif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
+        elif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
             echo "changes found"
             echo "doExport=true" >> $GITHUB_OUTPUT
         fi
