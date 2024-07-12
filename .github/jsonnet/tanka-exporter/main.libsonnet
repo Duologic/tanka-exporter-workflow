@@ -80,6 +80,7 @@ ga.workflow.on.push.withPaths(paths)
           permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
           relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
         |||,
+        comment_tag: '${{ github.workflow }}-difflinks',
         mode: 'recreate',
       }),
 
