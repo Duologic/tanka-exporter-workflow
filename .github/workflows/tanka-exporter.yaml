@@ -26,14 +26,22 @@ jobs:
         working-directory: "jsonnet"
       - run: "rm -rf manifests/*"
         working-directory: "_manifests"
-      - id: "export"
+      - env:
+          BASE_SHA: "${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+        id: "export"
         run: |
+          ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+          
+          echo $ARGS
+          
           tk export \
-          --recursive \
-          --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' \
-          --merge-strategy=fail-on-conflicts \
           ../_manifests/manifests/ \
-          environments/
+          $ARGS \
+          --recursive \
+          --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}'
           
           cd ../manifests
           if [[ -n $(git status --porcelain) ]]; then

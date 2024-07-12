@@ -56,20 +56,32 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withId('export')
       + ga.job.step.withWorkingDirectory('jsonnet')
-      + ga.job.step.withRun(|||
-        tk export \
-        --recursive \
-        --format '%s' \
-        --merge-strategy=fail-on-conflicts \
-        ../_manifests/manifests/ \
-        environments/
+      + ga.job.step.withRun(
+        |||
+          ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
+          ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
 
-        cd ../manifests
-        if [[ -n $(git status --porcelain) ]]; then
-            echo "changes found"
-            echo "changes=true" >> $GITHUB_OUTPUT
-        fi
-      ||| % exportFormat),
+          echo $ARGS
+
+          tk export \
+          ../_manifests/manifests/ \
+          $ARGS \
+          --recursive \
+          --format '%s'
+
+          cd ../manifests
+          if [[ -n $(git status --porcelain) ]]; then
+              echo "changes found"
+              echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+        ||| % exportFormat
+      )
+      + ga.job.step.withEnv({
+        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
+        HEAD_SHA: '${{ github.event.pull_request.head.sha }}',
+      }),
+
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
