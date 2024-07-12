@@ -24,7 +24,7 @@ jobs:
       - env:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
-        run: "git fetch origin/main && git checkout main && git checkout -b pr-$PR"
+        run: "git fetch origin main && git checkout main && git checkout -b pr-$PR"
       - env:
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           GIT_AUTHOR_NAME: "${{ github.actor }}"
