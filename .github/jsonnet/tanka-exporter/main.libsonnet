@@ -47,41 +47,19 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
-      + ga.job.step.withRun(|||
-        echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_ENV
-        echo "GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-      |||)
-      + ga.job.step.withEnv({
-        GIT_AUTHOR_NAME: '${{ github.actor }}',
-        GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
-      }),
-
-      //ga.job.withIf("${{ github.event_name == 'push' }}")
-      //+ ga.job.step.withRun(|||
-      //  echo "GIT_AUTHOR_NAME" >> $GITHUB_ENV
-      //  echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-      //|||)
-      //+ ga.job.step.withEnv({
-      //  GIT_AUTHOR_NAME: '${{ github.event.push.name }}',
-      //  GIT_AUTHOR_EMAIL: '${{ github.event.push.email }}',
-      //}),
-
       ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
         git log -1 --format=fuller
         git show HEAD
+        git push
       |||)
       + ga.job.step.withEnv({
-        //GIT_AUTHOR_NAME: '${{ github.event.pusher.name }}',
-        //GIT_AUTHOR_EMAIL: '${{ github.event.pusher.email }}',
+        GIT_AUTHOR_NAME: '${{ github.actor }}',
+        GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
         GIT_COMMITTER_NAME: 'github-actions[bot]',
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
       }),
-
-      ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}")
-      + ga.job.step.withRun('git push'),
     ]),
 })

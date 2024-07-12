@@ -26,11 +26,6 @@ jobs:
       - env:
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           GIT_AUTHOR_NAME: "${{ github.actor }}"
-        if: "${{ github.event_name == 'pull_request' }}"
-        run: |
-          echo "GIT_AUTHOR_NAME=$GIT_AUTHOR_NAME" >> $GITHUB_ENV
-          echo "GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
-      - env:
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
         if: "${{ steps.export.outputs.changes == 'true' }}"
@@ -39,8 +34,7 @@ jobs:
           git commit -m "generated"
           git log -1 --format=fuller
           git show HEAD
-      - if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
-        run: "git push"
+          git push
 "on":
   pull_request:
     paths:
