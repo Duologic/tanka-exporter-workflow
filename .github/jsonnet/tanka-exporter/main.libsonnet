@@ -60,35 +60,32 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      local commitMessage = |||
-        $(git -C .. log -1 --pretty=%B)
-
-        --
-
-        - Event: $GITHUB_EVENT
-        - Branch: $GITHUB_BASE_REF
-        - Build link: $BUILD_LINK
-      |||;
       ga.job.step.withId('commit')
       + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
-        git commit -m "%s"
+        git commit -m "$MESSAGE"
         git log -1 --format=fuller
         git show HEAD
         git config --global push.autoSetupRemote true
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-      ||| % commitMessage)
+      |||)
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.actor }}',
         GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
         GIT_COMMITTER_NAME: 'github-actions[bot]',
         GIT_COMMITTER_EMAIL: '41898282+github-actions[bot]@users.noreply.github.com',
 
-        GITHUB_EVENT: '${{ github.event_name }}',
-        GITHUB_BASE_REF: '${{ github.base_ref }}',
-        BUILD_LINK: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',
+        MESSAGE: |||
+          ${{ github.event.head_commit.message }}
+
+          --
+
+          - Event: ${{ github.event_name }}
+          - Branch: ${{ github.base_ref }}
+          - Build link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        |||,
       }),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
