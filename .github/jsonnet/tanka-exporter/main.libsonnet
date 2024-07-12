@@ -70,7 +70,6 @@ ga.workflow.on.push.withPaths(paths)
         git add manifests/
         git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
         git log -1 --format=fuller
-        git show HEAD
         git config --global push.autoSetupRemote true
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       |||)
