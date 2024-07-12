@@ -79,7 +79,7 @@ ga.workflow.on.push.withPaths(paths)
           --recursive \
           --format '%s'
 
-          cd ../manifests
+          cd ../_manifests/manifests
           if [[ -n $(git status --porcelain .) ]]; then
               echo "changes found"
               git status .

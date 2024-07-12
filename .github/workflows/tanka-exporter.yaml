@@ -51,7 +51,7 @@ jobs:
           --recursive \
           --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}'
           
-          cd ../manifests
+          cd ../_manifests/manifests
           if [[ -n $(git status --porcelain .) ]]; then
               echo "changes found"
               git status .
