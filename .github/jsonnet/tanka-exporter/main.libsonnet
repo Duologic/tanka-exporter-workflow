@@ -51,7 +51,7 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withId('base')
       + ga.job.step.withRun(|||
-        if [ $EVENT = 'pull_request']; then
+        if [ $EVENT = 'pull_request' ]; then
             echo "base=$BASE_SHA" >> $GITHUB_OUTPUT
         else
             echo "base=$BEFORE" >> $GITHUB_OUTPUT
