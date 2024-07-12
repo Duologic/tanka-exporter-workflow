@@ -79,6 +79,7 @@ ga.workflow.on.push.withPaths(paths)
 
         MESSAGE: |||
           ${{ github.event.head_commit.message }}
+          $(git -C ../ show -s --format"%%s" ${{ github.event.pull_request.head.sha }})
 
           --
 

@@ -41,6 +41,7 @@ jobs:
           GIT_COMMITTER_NAME: "github-actions[bot]"
           MESSAGE: |
             ${{ github.event.head_commit.message }}
+            $(git -C ../ show -s --format"%%s" ${{ github.event.pull_request.head.sha }})
             
             --
             
