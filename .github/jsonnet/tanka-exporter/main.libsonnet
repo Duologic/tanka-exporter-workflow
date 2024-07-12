@@ -93,6 +93,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
+        git add manifests.json
         git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
         git log -1 --format=fuller
         git config --global push.autoSetupRemote true
