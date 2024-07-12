@@ -60,6 +60,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withEnv({
         BEFORE: '${{ github.event.before }}',
         BASE_SHA: '${{ github.event.pull_request.base.sha }}',
+        EVENT: '${{ github.event_name }}',
       }),
 
       ga.job.step.withId('diff')
