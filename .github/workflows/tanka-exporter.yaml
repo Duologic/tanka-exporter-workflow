@@ -86,13 +86,19 @@ jobs:
         working-directory: "_manifests"
       - env:
           PR: "${{ github.event.number }}"
-        if: "${{ github.event_name == 'pull_request' }}"
+        if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}"
         run: "git push -u -f origin pr-$PR"
         working-directory: "_manifests"
-      - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
+      - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}"
         run: "git push"
         working-directory: "_manifests"
-      - if: "${{ github.event_name == 'pull_request' }}"
+      - if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}"
+        uses: "thollander/actions-comment-pull-request@v2"
+        with:
+          comment_tag: "${{ github.workflow }}-difflinks"
+          message: "No changes"
+          mode: "recreate"
+      - if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}"
         uses: "thollander/actions-comment-pull-request@v2"
         with:
           comment_tag: "${{ github.workflow }}-difflinks"

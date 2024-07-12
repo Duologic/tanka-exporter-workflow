@@ -123,16 +123,24 @@ ga.workflow.on.push.withPaths(paths)
         |||,
       }),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push -u -f origin pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}")
+      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push'),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}")
+      + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
+      + ga.job.step.withWith({
+        message: 'No changes',
+        comment_tag: '${{ github.workflow }}-difflinks',
+        mode: 'recreate',
+      }),
+
+      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: |||
