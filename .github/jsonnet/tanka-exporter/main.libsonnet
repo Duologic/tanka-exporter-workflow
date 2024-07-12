@@ -71,7 +71,7 @@ ga.workflow.on.push.withPaths(paths)
         ||| % exportFormat
       )
       + ga.job.step.withEnv({
-        BASE_REF: '${{ github.base_ref }}',
+        BASE_REF: '${{ github.event.before }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 

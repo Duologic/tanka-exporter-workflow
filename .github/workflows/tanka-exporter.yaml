@@ -19,7 +19,7 @@ jobs:
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
       - env:
-          BASE_REF: "${{ github.base_ref }}"
+          BASE_REF: "${{ github.event.before }}"
           BULK: "${{ github.event_name == 'workflow_dispatch' }}"
         id: "export"
         run: |
