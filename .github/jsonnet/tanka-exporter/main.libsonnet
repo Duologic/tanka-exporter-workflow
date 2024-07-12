@@ -66,7 +66,7 @@ ga.workflow.on.push.withPaths(paths)
         echo ${{ github.ref }}
       |||),
 
-      ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/master' }}")
+      ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/main' }}")
       + ga.job.step.withRun('git push'),
     ]),
 })

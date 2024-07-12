@@ -38,7 +38,7 @@ jobs:
           echo ${{ steps.export.outputs.changes }}
           echo ${{ github.event_name }}
           echo ${{ github.ref }}
-      - if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/master' }}"
+      - if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'push' && github.ref == 'refs/head/main' }}"
         run: "git push"
 "on":
   pull_request:
