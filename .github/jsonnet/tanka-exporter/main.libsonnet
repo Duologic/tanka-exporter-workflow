@@ -65,7 +65,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
-        git commit -m "$MESSAGE"
+        git commit -m "$(git -C ../ show -s --format"%%s" ${{ github.event.pull_request.head.sha }})\n$MESSAGE"
         git log -1 --format=fuller
         git show HEAD
         git config --global push.autoSetupRemote true
@@ -79,7 +79,6 @@ ga.workflow.on.push.withPaths(paths)
 
         MESSAGE: |||
           ${{ github.event.head_commit.message }}
-          $(git -C ../ show -s --format"%%s" ${{ github.event.pull_request.head.sha }})
 
           --
 
