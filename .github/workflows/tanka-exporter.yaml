@@ -42,6 +42,7 @@ jobs:
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
           MESSAGE: |
+            
             --
             
             - Event: ${{ github.event_name }}
@@ -51,7 +52,7 @@ jobs:
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git commit -m "$(git -C ../ show -s --format"%s")\n$MESSAGE"
+          git commit -m "$(git -C ../ show -s --format"%s")$MESSAGE"
           git log -1 --format=fuller
           git show HEAD
           git config --global push.autoSetupRemote true
