@@ -24,16 +24,21 @@ jobs:
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
           echo $ARGS
         working-directory: "jsonnet"
-      - run: "rm -rf manifests/*/"
+      - if: "${{ github.event_name == 'workflow_dispatch' }}"
+        run: "rm -rf manifests/*/"
         working-directory: "_manifests"
       - env:
           BASE_SHA: "${{ github.event.pull_request.base.sha }}"
+          BULK: "${{ github.event_name == 'workflow_dispatch' }}"
           HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
         id: "export"
         run: |
-          ARGS="environments/ --merge-strategy=fail-on-conflicts"
           eval $(git diff --name-status --no-renames $BASE_SHA...$HEAD_SHA | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+          
+          if [[ $BULK = 'true' ]]; then
+            ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          fi
           
           echo $ARGS
           
@@ -102,6 +107,7 @@ jobs:
     paths:
       - "jsonnet/**"
       - ".github/**"
+  workflow_dispatch: {}
 permissions:
   contents: "write"
   pull-requests: "write"
