@@ -75,7 +75,7 @@ jobs:
         if: "${{ steps.export.outputs.changes == 'true' }}"
         run: |
           git add manifests/
-          git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
+          git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
           git log -1 --format=fuller
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT

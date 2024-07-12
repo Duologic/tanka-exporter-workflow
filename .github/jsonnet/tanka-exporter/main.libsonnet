@@ -88,7 +88,6 @@ ga.workflow.on.push.withPaths(paths)
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
       }),
 
-
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git checkout -b pr-$PR')
@@ -99,7 +98,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
-        git commit -m "$(git -C ../ show -s --format=%s)$MESSAGE"
+        git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
         git log -1 --format=fuller
         git config --global push.autoSetupRemote true
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
