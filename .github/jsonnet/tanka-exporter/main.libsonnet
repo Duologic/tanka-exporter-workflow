@@ -44,7 +44,23 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
 
+      ga.job.step.withId('diff')
+      + ga.job.step.withRun(|||
+        if [[ $BULK = 'true' ]]; then
+            echo "run as bulk"
+            echo "doExport=true" >> $GITHUB_OUTPUT
+        elsif [[ -n $(git diff --name-status --no-renames $BASE_REF...HEAD jsonnet/) ]]; then
+            echo "changes found"
+            echo "doExport=true" >> $GITHUB_OUTPUT
+        fi
+      |||)
+      + ga.job.step.withEnv({
+        BASE_REF: '${{ github.event.before }}',
+        BULK: "${{ github.event_name == 'workflow_dispatch' }}",
+      }),
+
       ga.job.step.withId('export')
+      + ga.job.step.withIf("${{ steps.diff.outputs.doExport == 'true' }}")
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
         |||
