@@ -1,3 +1,3 @@
 local k = import 'k.libsonnet';
 
-k.apps.v1.deployment.new('something', 500, [])
+k.apps.v1.deployment.new('test-again', 500, [])
