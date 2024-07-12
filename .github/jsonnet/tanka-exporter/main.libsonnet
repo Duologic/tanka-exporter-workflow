@@ -53,8 +53,8 @@ ga.workflow.on.push.withPaths(paths)
         echo "GIT_AUTHOR_EMAIL" >> $GITHUB_ENV
       |||)
       + ga.job.step.withEnv({
-        GIT_AUTHOR_NAME: '${{ github.event.user.name }}',
-        GIT_AUTHOR_EMAIL: '${{ github.event.user.email }}',
+        GIT_AUTHOR_NAME: '${{ github.actor.name }}',
+        GIT_AUTHOR_EMAIL: '${{ github.actor.email }}',
       }),
 
       //ga.job.withIf("${{ github.event_name == 'push' }}")
