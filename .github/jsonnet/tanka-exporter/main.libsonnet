@@ -17,10 +17,12 @@ local paths = [
 ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
-+ ga.workflow.permissions.withPullRequests('write')
++ ga.workflow.permissions.withPullRequests('write')  // allow pr comments
 + ga.workflow.permissions.withContents('write')  // allow git push
++ ga.workflow.concurrency.withGroup('${{ github.workflow }}-${{ github.ref }}')  // only run this workflow once per ref
++ ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
-  show:
+  export:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       ga.job.step.withUses('actions/checkout@v4'),
