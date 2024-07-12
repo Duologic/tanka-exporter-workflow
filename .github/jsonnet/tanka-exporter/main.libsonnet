@@ -1,13 +1,17 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 
-local exportFormat = std.strReplace(|||
-  {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
-  {{ if .metadata.namespace }}{{.metadata.namespace}}
-  {{ else }}_cluster
-  {{ end }}/
-  {{.kind}}-{{.metadata.name}}
-|||, '\n', '');
+local exportFormat = std.strReplace(
+  |||
+    {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
+    {{ if .metadata.namespace }}{{.metadata.namespace}}
+    {{ else }}_cluster
+    {{ end }}/
+    {{.kind}}-{{.metadata.name}}
+  |||,
+  '\n',
+  ''
+);
 
 local paths = [
   'jsonnet/**',
@@ -38,11 +42,6 @@ ga.workflow.on.push.withPaths(paths)
         path: '_manifests',
       }),
 
-      ga.job.step.withEnv({
-        GITHUB_CONTEXT: '${{ toJson(github) }}',
-      })
-      + ga.job.step.withRun('echo "$GITHUB_CONTEXT"'),
-
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
@@ -50,13 +49,15 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('_manifests'),
 
       ga.job.step.withId('base')
-      + ga.job.step.withRun(|||
-        if [ $EVENT = 'pull_request' ]; then
-            echo "base=$BASE_SHA" >> $GITHUB_OUTPUT
-        else
-            echo "base=$BEFORE" >> $GITHUB_OUTPUT
-        fi
-      |||)
+      + ga.job.step.withRun(
+        |||
+          if [ $EVENT = 'pull_request' ]; then
+              echo "base=$BASE_SHA" >> $GITHUB_OUTPUT
+          else
+              echo "base=$BEFORE" >> $GITHUB_OUTPUT
+          fi
+        |||
+      )
       + ga.job.step.withEnv({
         BEFORE: '${{ github.event.before }}',
         BASE_SHA: '${{ github.event.pull_request.base.sha }}',
@@ -64,15 +65,17 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withId('diff')
-      + ga.job.step.withRun(|||
-        if [ $BULK = 'true' ]; then
-            echo "run as bulk"
-            echo "doExport=true" >> $GITHUB_OUTPUT
-        elif [[ -n $(git diff --name-status --no-renames $BASE...HEAD jsonnet/) ]]; then
-            echo "changes found"
-            echo "doExport=true" >> $GITHUB_OUTPUT
-        fi
-      |||)
+      + ga.job.step.withRun(
+        |||
+          if [ $BULK = 'true' ]; then
+              echo "run as bulk"
+              echo "doExport=true" >> $GITHUB_OUTPUT
+          elif [[ -n $(git diff --name-status --no-renames $BASE...HEAD jsonnet/) ]]; then
+              echo "changes found"
+              echo "doExport=true" >> $GITHUB_OUTPUT
+          fi
+        |||
+      )
       + ga.job.step.withEnv({
         BASE: '${{ steps.base.outputs.base }}',
         BULK: "${{ github.event_name == 'workflow_dispatch' }}",
@@ -119,13 +122,15 @@ ga.workflow.on.push.withPaths(paths)
       ga.job.step.withId('commit')
       + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
-      + ga.job.step.withRun(|||
-        git add manifests/
-        git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
-        git log -1 --format=fuller
-        git config --global push.autoSetupRemote true
-        echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-      |||)
+      + ga.job.step.withRun(
+        |||
+          git add manifests/
+          git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
+          git log -1 --format=fuller
+          git config --global push.autoSetupRemote true
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        |||
+      )
       + ga.job.step.withEnv({
         GIT_AUTHOR_NAME: '${{ github.actor }}',
         GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
