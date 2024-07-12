@@ -48,6 +48,7 @@ jobs:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
         run: "git push -u -f origin pr-$PR"
+        working-directory: "_manifests"
       - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         run: "git push"
         working-directory: "_manifests"

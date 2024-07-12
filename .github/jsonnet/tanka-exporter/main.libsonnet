@@ -75,6 +75,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push -u -f origin pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
