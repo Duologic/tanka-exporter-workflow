@@ -4,17 +4,20 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v4"
         with:
-          fetch-depth: 100
+          path: "_manifests"
+          ref: "main"
       - uses: "./.github/actions/install-tanka"
       - run: "rm -rf manifests/*"
+        working-directory: "_manifests"
       - id: "export"
         run: |
           tk export \
           --recursive \
           --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}' \
           --merge-strategy=fail-on-conflicts \
-          ../manifests/ \
+          ../_manifests/manifests/ \
           environments/
           if [[ -n $(git status --porcelain ../manifests/) ]]; then
               echo "changes found"
@@ -24,7 +27,8 @@ jobs:
       - env:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
-        run: "git fetch origin main && git checkout main && git checkout -b pr-$PR"
+        run: "git checkout -b pr-$PR"
+        working-directory: "_manifests"
       - env:
           GIT_AUTHOR_EMAIL: "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           GIT_AUTHOR_NAME: "${{ github.actor }}"
@@ -39,12 +43,14 @@ jobs:
           git show HEAD
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        working-directory: "_manifests"
       - env:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' }}"
         run: "git push -u -f origin pr-$PR"
       - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}"
         run: "git push"
+        working-directory: "_manifests"
       - if: "${{ github.event_name == 'pull_request' }}"
         uses: "thollander/actions-comment-pull-request@v2"
         with:

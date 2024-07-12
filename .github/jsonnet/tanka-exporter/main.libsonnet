@@ -23,36 +23,42 @@ ga.workflow.on.push.withPaths(paths)
   show:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
+      ga.job.step.withUses('actions/checkout@v4'),
+
       ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
-        'fetch-depth': 100,
+        ref: 'main',
+        path: '_manifests',
       }),
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
-      ga.job.step.withRun('rm -rf manifests/*'),
+      ga.job.step.withRun('rm -rf manifests/*')
+      + ga.job.step.withWorkingDirectory('_manifests'),
 
       ga.job.step.withId('export')
+      + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(|||
         tk export \
         --recursive \
         --format '%s' \
         --merge-strategy=fail-on-conflicts \
-        ../manifests/ \
+        ../_manifests/manifests/ \
         environments/
         if [[ -n $(git status --porcelain ../manifests/) ]]; then
             echo "changes found"
             echo "changes=true" >> $GITHUB_OUTPUT
         fi
-      ||| % exportFormat,)
-      + ga.job.step.withWorkingDirectory('jsonnet'),
+      ||| % exportFormat),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
-      + ga.job.step.withRun('git fetch origin main && git checkout main && git checkout -b pr-$PR')
+      + ga.job.step.withWorkingDirectory('_manifests')
+      + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.step.withId('commit')
       + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
+      + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(|||
         git add manifests/
         git commit -m "generated"
@@ -73,6 +79,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}")
+      + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push'),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
@@ -85,6 +92,5 @@ ga.workflow.on.push.withPaths(paths)
         comment_tag: '${{ github.workflow }}-difflinks',
         mode: 'recreate',
       }),
-
     ]),
 })
