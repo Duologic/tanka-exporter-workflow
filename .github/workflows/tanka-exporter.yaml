@@ -52,9 +52,9 @@ jobs:
           --format '{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{.metadata.namespace}}{{ else }}_cluster{{ end }}/{{.kind}}-{{.metadata.name}}'
           
           cd ../manifests
-          if [[ -n $(git status --porcelain) ]]; then
+          if [[ -n $(git status --porcelain .) ]]; then
               echo "changes found"
-              git status
+              git status .
               echo "changes=true" >> $GITHUB_OUTPUT
           fi
         working-directory: "jsonnet"
