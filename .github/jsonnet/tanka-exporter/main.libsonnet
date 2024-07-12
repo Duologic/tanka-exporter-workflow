@@ -45,7 +45,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory('jsonnet'),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
-      + ga.job.step.withRun('git checkout -b pr-$PR')
+      + ga.job.step.withRun('git checkout main && git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.step.withId('commit')
