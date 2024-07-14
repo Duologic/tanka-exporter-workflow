@@ -47,18 +47,17 @@ ga.workflow.on.push.withPaths(paths)
       ga.job.step.withId('filter')
       + ga.job.step.withUses('dorny/paths-filter@v3')
       + ga.job.step.withWith({
+        'list-files': 'json',
         // multiline ||| triggers multiline in manifestYamlDoc
         filters: |||
           %s
         ||| % std.manifestYamlDoc({ jsonnet: ['jsonnet/**'] }, true),
       }),
 
-      ga.job.step.withRun('echo $OUTPUT')
+      ga.job.step.withRun('echo $CHANGED: $FILES')
       + ga.job.step.withEnv({
-        OUTPUT: |||
-          ${{ steps.fitler.outputs.changes.jsonnet }}
-          ${{ steps.fitler.outputs.changes.jsonnet_files }}
-        |||,
+        CHANGED: '${{ steps.fitler.outputs.jsonnet }}',
+        FILES: '${{ steps.fitler.outputs.jsonnet_files }}',
       }),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
