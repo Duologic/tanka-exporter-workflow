@@ -40,6 +40,7 @@ jobs:
         run: |
           MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
           echo $MODIFIED_FILES
+          pwd
           tk tool importers $MODIFIED_FILES
         working-directory: "jsonnet"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"

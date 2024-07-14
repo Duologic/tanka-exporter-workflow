@@ -64,6 +64,7 @@ ga.workflow.on.push.withPaths(paths)
         |||
           MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
           echo $MODIFIED_FILES
+          pwd
           tk tool importers $MODIFIED_FILES
         |||
       )
