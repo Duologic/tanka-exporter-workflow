@@ -15,6 +15,13 @@ jobs:
           path: "_manifests"
           ref: "main"
       - uses: "./.github/actions/install-tanka"
+      - id: "filter"
+        uses: "dorny/paths-filter@v3"
+        with:
+          filters: |
+            "jsonnet":
+              - "jsonnet/**"
+      - run: "echo ${{ steps.fitler.outputs.* }}"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
