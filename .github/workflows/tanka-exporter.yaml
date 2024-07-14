@@ -23,8 +23,8 @@ jobs:
               - "jsonnet/**"
           list-files: "json"
       - env:
-          CHANGED: "${{ steps.fitler.outputs.jsonnet }}"
-          FILES: "${{ steps.fitler.outputs.jsonnet_files }}"
+          CHANGED: "${{ steps.filter.outputs.jsonnet }}"
+          FILES: "${{ steps.filter.outputs.jsonnet_files }}"
         run: "echo $CHANGED: $FILES"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"
         run: "rm -rf manifests/*/"
