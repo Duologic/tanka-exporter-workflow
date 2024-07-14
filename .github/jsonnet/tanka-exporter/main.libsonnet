@@ -135,7 +135,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun(
         |||
           tk export \
-          ../$MANIFESTS_DIR/manifests/ \
+          ../../$MANIFESTS_DIR/manifests/ \
           $ARGS \
           --recursive \
           --format '$EXPORT_FORMAT'
