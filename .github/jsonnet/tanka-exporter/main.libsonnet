@@ -138,7 +138,7 @@ ga.workflow.on.push.withPaths(paths)
           ../../$MANIFESTS_DIR/manifests/ \
           $ARGS \
           --recursive \
-          --format '$EXPORT_FORMAT'
+          --format "$EXPORT_FORMAT"
         |||
       )
       + ga.job.step.withEnv({

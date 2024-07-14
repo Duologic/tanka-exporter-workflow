@@ -97,7 +97,7 @@ jobs:
           ../../$MANIFESTS_DIR/manifests/ \
           $ARGS \
           --recursive \
-          --format '$EXPORT_FORMAT'
+          --format "$EXPORT_FORMAT"
         working-directory: "_source/jsonnet"
       - id: "changed"
         name: "Check if manifests changed"
