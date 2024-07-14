@@ -53,11 +53,14 @@ ga.workflow.on.push.withPaths(paths)
         ||| % std.manifestYamlDoc({ jsonnet: ['jsonnet/**'] }, true),
       }),
 
-      ga.job.step.withRun(|||
-        echo ${{ steps.fitler.outputs.changes }}
-        echo ${{ steps.fitler.outputs.jsonnet }}
-        echo ${{ steps.fitler.outputs.jsonnet_files }}
-      |||),
+      ga.job.step.withRun('echo $OUTPUT')
+      + ga.job.step.withEnv({
+        OUTPUT: |||
+          ${{ steps.fitler.outputs.changes }}
+          ${{ steps.fitler.outputs.jsonnet }}
+          ${{ steps.fitler.outputs.jsonnet_files }}
+        |||,
+      }),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun('rm -rf manifests/*/')
