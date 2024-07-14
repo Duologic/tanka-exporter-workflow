@@ -62,18 +62,18 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withRun(
         |||
-          SCRIPT=<<EOF
-            std.join(' ',
-              std.map(function(f) f[8:], $CHANGED_FILES)
-              + std.map(function(f) 'deleted:'+f[8:], $DELETED_FILES)
-            )
-          EOF
           MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
           echo $MODIFIED_FILES
           tk tool importers $MODIFIED_FILES
         |||
       )
       + ga.job.step.withEnv({
+        SCRIPT: |||
+          std.join(' ',
+            std.map(function(f) f[8:], ${{ steps.filter.outputs.addedModifiedJsonnet_files }})
+            + std.map(function(f) 'deleted:'+f[8:], ${{ steps.filter.outputs.deletedJsonnet_files }})
+          )
+        |||,
         CHANGED_FILES: '${{ steps.filter.outputs.addedModifiedJsonnet_files }}',
         DELETED_FILES: '${{ steps.filter.outputs.deletedJsonnet_files }}',
       }),
