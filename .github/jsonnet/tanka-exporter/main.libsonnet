@@ -56,9 +56,8 @@ ga.workflow.on.push.withPaths(paths)
       ga.job.step.withRun('echo $OUTPUT')
       + ga.job.step.withEnv({
         OUTPUT: |||
-          ${{ steps.fitler.outputs.changes }}
-          ${{ steps.fitler.outputs.jsonnet }}
-          ${{ steps.fitler.outputs.jsonnet_files }}
+          ${{ steps.fitler.outputs.changes.jsonnet }}
+          ${{ steps.fitler.outputs.changes.jsonnet_files }}
         |||,
       }),
 
