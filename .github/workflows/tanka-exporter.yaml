@@ -94,7 +94,7 @@ jobs:
         name: "Export manifests with Tanka"
         run: |
           tk export \
-          ../$MANIFESTS_DIR/manifests/ \
+          ../../$MANIFESTS_DIR/manifests/ \
           $ARGS \
           --recursive \
           --format '$EXPORT_FORMAT'
