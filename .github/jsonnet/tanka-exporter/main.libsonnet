@@ -30,11 +30,7 @@ ga.workflow.on.push.withPaths(paths)
   export:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withUses('actions/checkout@v4')
-      + ga.job.step.withWith({
-        ref: '${{ github.event.pull_request.head.sha }}',
-        'fetch-depth': 100,
-      }),
+      ga.job.step.withUses('actions/checkout@v4'),
 
       ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
