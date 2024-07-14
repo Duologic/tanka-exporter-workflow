@@ -6,14 +6,17 @@ jobs:
   export:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v4"
-      - uses: "actions/checkout@v4"
+      - name: "Checkout source repository"
+        uses: "actions/checkout@v4"
+      - name: "Checkout manifest repository"
+        uses: "actions/checkout@v4"
         with:
           path: "_manifests"
           ref: "main"
       - uses: "./.github/actions/install-tanka"
       - uses: "kobtea/setup-jsonnet-action@v2"
       - id: "filter"
+        name: "Find changed paths"
         uses: "dorny/paths-filter@v3"
         with:
           filters: |
@@ -33,6 +36,8 @@ jobs:
               + std.map(function(f) 'deleted:'+f[8:], ${{ steps.filter.outputs.deletedJsonnet_files }})
             )
         id: "modified"
+        if: "${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}"
+        name: "Find modified Tanka environments"
         run: |
           MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
           echo $MODIFIED_FILES
@@ -42,23 +47,28 @@ jobs:
       - env:
           DELETED_FILES: "${{ steps.filter.outputs.deletedEnvs_files }}"
         id: "deleted"
+        if: "${{ steps.filter.outputs.deletedEnvs == 'true' }}"
+        name: "Find deleted Tanka environments"
         run: |
           DELETED_ENVS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
           echo "args=$DELETED_ENVS" >> $GITHUB_OUTPUT
-      - if: "${{ github.event_name == 'workflow_dispatch' }}"
-        run: "rm -rf manifests/*/"
-        working-directory: "_manifests"
       - id: "bulk"
         if: "${{ github.event_name == 'workflow_dispatch' }}"
+        name: "Find out whether to do a bulk export"
         run: |
           echo "run as bulk"
           echo "bulk=true" >> $GITHUB_OUTPUT
+      - if: "${{ steps.bulk.outputs.bulk == 'true' }}"
+        name: "Clear out manifests for bulk export"
+        run: "rm -rf manifests/*/"
+        working-directory: "_manifests"
       - env:
           BULK: "${{ steps.bulk.outputs.bulk }}"
           DELETED_ENVS: "${{ steps.deleted.outputs.args }}"
           MODIFIED_ENVS: "${{ steps.modified.outputs.envs }}"
         id: "args"
         if: "${{ steps.filter.outputs.jsonnet == 'true' }}"
+        name: "Compose Tanka arguments"
         run: |
           if [ $BULK = 'true' ]; then
               echo "run as bulk"
@@ -75,6 +85,7 @@ jobs:
           ARGS: "${{ steps.args.outputs.args }}"
         id: "export"
         if: "${{ steps.filter.outputs.jsonnet == 'true' }}"
+        name: "Export manifests with Tanka"
         run: |
           tk export \
           ../_manifests/manifests/ \
@@ -91,7 +102,8 @@ jobs:
         working-directory: "jsonnet"
       - env:
           PR: "${{ github.event.number }}"
-        if: "${{ github.event_name == 'pull_request' }}"
+        if: "${{ steps.export.outputs.changes == 'true' && github.event_name == 'pull_request' }}"
+        name: "Check out branch for pull_request commit"
         run: "git checkout -b pr-$PR"
         working-directory: "_manifests"
       - env:
@@ -108,6 +120,7 @@ jobs:
             - Build link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         id: "commit"
         if: "${{ steps.export.outputs.changes == 'true' }}"
+        name: "Make a commit to the manifests repository"
         run: |
           git add manifests/
           git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
@@ -118,18 +131,22 @@ jobs:
       - env:
           PR: "${{ github.event.number }}"
         if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}"
+        name: "Force push on pull_request"
         run: "git push -u -f origin pr-$PR"
         working-directory: "_manifests"
       - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}"
+        name: "Push on main"
         run: "git push"
         working-directory: "_manifests"
       - if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}"
+        name: "Make no-op comment"
         uses: "thollander/actions-comment-pull-request@v2"
         with:
           comment_tag: "${{ github.workflow }}-difflinks"
           message: "No changes"
           mode: "recreate"
       - if: "${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}"
+        name: "Make changes comment"
         uses: "thollander/actions-comment-pull-request@v2"
         with:
           comment_tag: "${{ github.workflow }}-difflinks"

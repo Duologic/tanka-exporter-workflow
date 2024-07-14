@@ -30,9 +30,11 @@ ga.workflow.on.push.withPaths(paths)
   export:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withUses('actions/checkout@v4'),
+      ga.job.step.withName('Checkout source repository')
+      + ga.job.step.withUses('actions/checkout@v4'),
 
-      ga.job.step.withUses('actions/checkout@v4')
+      ga.job.step.withName('Checkout manifest repository')
+      + ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
         ref: 'main',
         path: '_manifests',
@@ -41,7 +43,8 @@ ga.workflow.on.push.withPaths(paths)
       ga.job.step.withUses('./.github/actions/install-tanka'),
       ga.job.step.withUses('kobtea/setup-jsonnet-action@v2'),
 
-      ga.job.step.withId('filter')
+      ga.job.step.withName('Find changed paths')
+      + ga.job.step.withId('filter')
       + ga.job.step.withUses('dorny/paths-filter@v3')
       + ga.job.step.withWith({
         'list-files': 'json',
@@ -56,7 +59,9 @@ ga.workflow.on.push.withPaths(paths)
         }, true),
       }),
 
-      ga.job.step.withId('modified')
+      ga.job.step.withName('Find modified Tanka environments')
+      + ga.job.step.withId('modified')
+      + ga.job.step.withIf("${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}")
       + ga.job.step.withRun(
         |||
           MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
@@ -75,7 +80,9 @@ ga.workflow.on.push.withPaths(paths)
         |||,
       }),
 
-      ga.job.step.withId('deleted')
+      ga.job.step.withName('Find deleted Tanka environments')
+      + ga.job.step.withId('deleted')
+      + ga.job.step.withIf("${{ steps.filter.outputs.deletedEnvs == 'true' }}")
       + ga.job.step.withRun(
         |||
           DELETED_ENVS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
@@ -86,11 +93,8 @@ ga.workflow.on.push.withPaths(paths)
         DELETED_FILES: '${{ steps.filter.outputs.deletedEnvs_files }}',
       }),
 
-      ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
-      + ga.job.step.withRun('rm -rf manifests/*/')
-      + ga.job.step.withWorkingDirectory('_manifests'),
-
-      ga.job.step.withId('bulk')
+      ga.job.step.withName('Find out whether to do a bulk export')
+      + ga.job.step.withId('bulk')
       + ga.job.step.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun(
         |||
@@ -99,7 +103,13 @@ ga.workflow.on.push.withPaths(paths)
         |||
       ),
 
-      ga.job.step.withId('args')
+      ga.job.step.withName('Clear out manifests for bulk export')
+      + ga.job.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
+      + ga.job.step.withRun('rm -rf manifests/*/')
+      + ga.job.step.withWorkingDirectory('_manifests'),
+
+      ga.job.step.withName('Compose Tanka arguments')
+      + ga.job.step.withId('args')
       + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
       + ga.job.step.withRun(
         |||
@@ -123,7 +133,8 @@ ga.workflow.on.push.withPaths(paths)
         DELETED_ENVS: '${{ steps.deleted.outputs.args }}',
       }),
 
-      ga.job.step.withId('export')
+      ga.job.step.withName('Export manifests with Tanka')
+      + ga.job.step.withId('export')
       + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
@@ -146,12 +157,14 @@ ga.workflow.on.push.withPaths(paths)
         ARGS: '${{ steps.args.outputs.args }}',
       }),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' }}")
+      ga.job.step.withName('Check out branch for pull_request commit')
+      + ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'pull_request' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.step.withId('commit')
+      ga.job.step.withName('Make a commit to the manifests repository')
+      + ga.job.step.withId('commit')
       + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun(
@@ -179,16 +192,19 @@ ga.workflow.on.push.withPaths(paths)
         |||,
       }),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
+      ga.job.step.withName('Force push on pull_request')
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push -u -f origin pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
-      ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}")
+      ga.job.step.withName('Push on main')
+      + ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withWorkingDirectory('_manifests')
       + ga.job.step.withRun('git push'),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}")
+      ga.job.step.withName('Make no-op comment')
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: 'No changes',
@@ -196,7 +212,8 @@ ga.workflow.on.push.withPaths(paths)
         mode: 'recreate',
       }),
 
-      ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
+      ga.job.step.withName('Make changes comment')
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: |||
