@@ -67,6 +67,7 @@ ga.workflow.on.push.withPaths(paths)
           tk tool importers $MODIFIED_FILES
         |||
       )
+      + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withEnv({
         SCRIPT: |||
           std.join(' ',
