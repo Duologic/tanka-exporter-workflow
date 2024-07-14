@@ -44,6 +44,17 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
 
+      ga.job.step.withId('filter')
+      + ga.job.step.withUses('dorny/paths-filter@v3')
+      + ga.job.step.withWith({
+        // multiline ||| triggers multiline in manifestYamlDoc
+        filters: |||
+          %s
+        ||| % std.manifestYamlDoc({ jsonnet: ['jsonnet/**'] }, true),
+      }),
+
+      ga.job.step.withRun('echo ${{ steps.fitler.outputs.* }}'),
+
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
