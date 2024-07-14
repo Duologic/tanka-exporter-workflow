@@ -147,10 +147,10 @@ ga.workflow.on.push.withPaths(paths)
         EXPORT_FORMAT: std.strReplace(
           |||
             {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
-            {{ if .metadata.namespace }}{{.metadata.namespace}}
+            {{ if .metadata.namespace }}{{ .metadata.namespace }}
             {{ else }}_cluster
             {{ end }}/
-            {{.kind}}-{{.metadata.name}}
+            {{ .kind }}-{{ .metadata.name }}
           |||,
           '\n',
           ''
