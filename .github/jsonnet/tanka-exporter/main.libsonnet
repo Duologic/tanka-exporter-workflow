@@ -65,7 +65,6 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun(
         |||
           MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
-          echo $MODIFIED_FILES
           MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
           echo "envs=$MODIFIED_ENVS" >> $GITHUB_OUTPUT
         |||
