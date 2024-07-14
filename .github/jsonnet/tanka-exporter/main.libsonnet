@@ -60,11 +60,13 @@ ga.workflow.on.push.withPaths(paths)
         }, true),
       }),
 
-      ga.job.step.withRun(
+      ga.job.step.withId('modified')
+      + ga.job.step.withRun(
         |||
           MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
           echo $MODIFIED_FILES
-          tk tool importers $MODIFIED_FILES
+          MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
+          echo "envs=$MODIFIED_ENVS" >> $GITHUB_OUTPUT
         |||
       )
       + ga.job.step.withWorkingDirectory('jsonnet')
@@ -75,7 +77,16 @@ ga.workflow.on.push.withPaths(paths)
             + std.map(function(f) 'deleted:'+f[8:], ${{ steps.filter.outputs.deletedJsonnet_files }})
           )
         |||,
-        CHANGED_FILES: '${{ steps.filter.outputs.addedModifiedJsonnet_files }}',
+      }),
+
+      ga.job.step.withId('deleted')
+      + ga.job.step.withRun(
+        |||
+          DELETED_ENVS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
+          echo "args=$DELETED_ENVS" >> $GITHUB_OUTPUT
+        |||
+      )
+      + ga.job.step.withEnv({
         DELETED_FILES: '${{ steps.filter.outputs.deletedJsonnet_files }}',
       }),
 
@@ -83,53 +94,44 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun('rm -rf manifests/*/')
       + ga.job.step.withWorkingDirectory('_manifests'),
 
-      ga.job.step.withId('base')
+      ga.job.step.withId('bulk')
+      + ga.job.step.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun(
         |||
-          if [ $EVENT = 'pull_request' ]; then
-              echo "base=$BASE_SHA" >> $GITHUB_OUTPUT
-          else
-              echo "base=$BEFORE" >> $GITHUB_OUTPUT
-          fi
+          echo "run as bulk"
+          echo "bulk=true" >> $GITHUB_OUTPUT
         |||
-      )
-      + ga.job.step.withEnv({
-        BEFORE: '${{ github.event.before }}',
-        BASE_SHA: '${{ github.event.pull_request.base.sha }}',
-        EVENT: '${{ github.event_name }}',
-      }),
+      ),
 
-      ga.job.step.withId('diff')
+      ga.job.step.withId('args')
+      + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
       + ga.job.step.withRun(
         |||
           if [ $BULK = 'true' ]; then
               echo "run as bulk"
-              echo "doExport=true" >> $GITHUB_OUTPUT
-          elif [[ -n $(git diff --name-status --no-renames $BASE...HEAD jsonnet/) ]]; then
-              echo "changes found"
-              echo "doExport=true" >> $GITHUB_OUTPUT
+
+              ARGS="environments/ --merge-strategy=fail-on-conflicts"
+
+              echo "args=$ARGS" >> $GITHUB_OUTPUT
+          else
+              ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
+
+              echo "args=$ARGS" >> $GITHUB_OUTPUT
           fi
         |||
       )
       + ga.job.step.withEnv({
-        BASE: '${{ steps.base.outputs.base }}',
-        BULK: "${{ github.event_name == 'workflow_dispatch' }}",
+        BULK: '${{ steps.bulk.outputs.bulk }}',
+
+        MODIFIED_ENVS: '${{ steps.modified.outputs.envs }}',
+        DELETED_ENVS: '${{ steps.deleted.outputs.args }}',
       }),
 
       ga.job.step.withId('export')
-      + ga.job.step.withIf("${{ steps.diff.outputs.doExport == 'true' }}")
+      + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
       + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withRun(
         |||
-          if [[ $BULK = 'true' ]]; then
-            ARGS="environments/ --merge-strategy=fail-on-conflicts"
-          else
-            eval $(git diff --name-status --no-renames $BASE...HEAD | tk eval ../.github/jsonnet/env_partial_exporter.jsonnet | xargs printf)
-            ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-          fi
-
-          echo $ARGS
-
           tk export \
           ../_manifests/manifests/ \
           $ARGS \
@@ -145,8 +147,7 @@ ga.workflow.on.push.withPaths(paths)
         ||| % exportFormat
       )
       + ga.job.step.withEnv({
-        BASE: '${{ steps.base.outputs.base }}',
-        BULK: "${{ github.event_name == 'workflow_dispatch' }}",
+        ARGS: '${{ steps.args.outputs.args }}',
       }),
 
       ga.job.withIf("${{ github.event_name == 'pull_request' }}")
