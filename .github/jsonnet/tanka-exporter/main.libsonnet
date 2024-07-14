@@ -87,7 +87,7 @@ ga.workflow.on.push.withPaths(paths)
         |||
       )
       + ga.job.step.withEnv({
-        DELETED_FILES: '${{ steps.filter.outputs.deletedJsonnet_files }}',
+        DELETED_FILES: '${{ steps.filter.outputs.deletedEnvs_files }}',
       }),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")

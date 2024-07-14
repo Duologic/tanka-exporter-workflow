@@ -43,7 +43,7 @@ jobs:
           echo "envs=$MODIFIED_ENVS" >> $GITHUB_OUTPUT
         working-directory: "jsonnet"
       - env:
-          DELETED_FILES: "${{ steps.filter.outputs.deletedJsonnet_files }}"
+          DELETED_FILES: "${{ steps.filter.outputs.deletedEnvs_files }}"
         id: "deleted"
         run: |
           DELETED_ENVS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
