@@ -33,7 +33,7 @@ ga.workflow.on.push.withPaths(paths)
         path: manifestsRepo,
       }),
 
-      ga.job.step.withUses(sourceRepo + '/.github/actions/install-tanka'),
+      ga.job.step.withUses('./' + sourceRepo + '/.github/actions/install-tanka'),
       ga.job.step.withUses('kobtea/setup-jsonnet-action@v2'),
 
       ga.job.step.withName('Find changed paths')

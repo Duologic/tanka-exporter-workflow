@@ -15,7 +15,7 @@ jobs:
         with:
           path: "_manifests"
           ref: "main"
-      - uses: "_source/.github/actions/install-tanka"
+      - uses: "./_source/.github/actions/install-tanka"
       - uses: "kobtea/setup-jsonnet-action@v2"
       - id: "filter"
         name: "Find changed paths"
