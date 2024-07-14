@@ -56,8 +56,8 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withRun('echo $CHANGED: $FILES')
       + ga.job.step.withEnv({
-        CHANGED: '${{ steps.fitler.outputs.jsonnet }}',
-        FILES: '${{ steps.fitler.outputs.jsonnet_files }}',
+        CHANGED: '${{ steps.filter.outputs.jsonnet }}',
+        FILES: '${{ steps.filter.outputs.jsonnet_files }}',
       }),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")
