@@ -103,7 +103,6 @@ jobs:
         name: "Check if manifests changed"
         uses: "tj-actions/verify-changed-files@v20"
         with:
-          files: "manifests"
           path: "_manifests"
       - env:
           PR: "${{ github.event.number }}"
