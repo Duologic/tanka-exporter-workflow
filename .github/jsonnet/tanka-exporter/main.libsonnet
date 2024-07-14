@@ -157,7 +157,8 @@ ga.workflow.on.push.withPaths(paths)
         ),
       }),
 
-      ga.job.step.withId('changed')
+      ga.job.step.withName('Check if manifests changed')
+      + ga.job.step.withId('changed')
       + ga.job.step.withUses('tj-actions/verify-changed-files@v20')
       + ga.job.step.withWith({
         files: 'manifests/**',
