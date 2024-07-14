@@ -38,9 +38,8 @@ jobs:
               + std.map(function(f) 'deleted:'+f[8:], ${{ steps.filter.outputs.deletedJsonnet_files }})
             )
         run: |
-          MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
+          MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
           echo $MODIFIED_FILES
-          pwd
           tk tool importers $MODIFIED_FILES
         working-directory: "jsonnet"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"

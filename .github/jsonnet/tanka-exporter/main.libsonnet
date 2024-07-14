@@ -62,9 +62,8 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withRun(
         |||
-          MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
+          MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
           echo $MODIFIED_FILES
-          pwd
           tk tool importers $MODIFIED_FILES
         |||
       )
