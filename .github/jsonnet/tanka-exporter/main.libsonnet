@@ -1,13 +1,23 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 /* TODO:
- * - Proper handling of multiple commit messages
+ * - Turn into a composite action
+ * - Rebase on last export (needed for high-traffic repositories)
  * - Surface all authors on a PR merge
- * - Rebase on last export
+ * - Handling of multiple commit messages exported (related to rebase)
+ * NICE TO HAVE:
+ * - Expand change message
+ *      - add warnings for destructive actions (namespace/CRD/kustomization deletion)
+ *      - list changed enviroments (perhaps with groupings)
  */
 
+local sourceRepo = '_source';
+local jsonnetDir = 'jsonnet';
+local manifestsRepo = '_manifests';
+local manifestsDir = 'manifests';
+
 local paths = [
-  'jsonnet/**',
+  jsonnetDir + '/**',
   '.github/**',
 ];
 
@@ -21,11 +31,6 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
   export:
-    local sourceRepo = '_source';
-    local jsonnetDir = 'jsonnet';
-    local manifestsRepo = '_manifests';
-    local manifestsDir = 'manifests';
-
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       ga.job.step.withName('Checkout source repository')
