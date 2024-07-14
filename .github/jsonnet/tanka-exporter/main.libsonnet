@@ -1,18 +1,6 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 
-local exportFormat = std.strReplace(
-  |||
-    {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
-    {{ if .metadata.namespace }}{{.metadata.namespace}}
-    {{ else }}_cluster
-    {{ end }}/
-    {{.kind}}-{{.metadata.name}}
-  |||,
-  '\n',
-  ''
-);
-
 local paths = [
   'jsonnet/**',
   '.github/**',
@@ -28,16 +16,21 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
   export:
+    local sourceRepo = '_source';
+    local jsonnetDir = 'jsonnet';
+    local manifestsRepo = '_manifests';
+
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       ga.job.step.withName('Checkout source repository')
-      + ga.job.step.withUses('actions/checkout@v4'),
+      + ga.job.step.withUses('actions/checkout@v4')
+      + ga.job.step.withEnv({ path: sourceRepo }),
 
       ga.job.step.withName('Checkout manifest repository')
       + ga.job.step.withUses('actions/checkout@v4')
       + ga.job.step.withWith({
         ref: 'main',
-        path: '_manifests',
+        path: manifestsRepo,
       }),
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
@@ -47,36 +40,40 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withId('filter')
       + ga.job.step.withUses('dorny/paths-filter@v3')
       + ga.job.step.withWith({
+        'working-directory': sourceRepo,
         'list-files': 'json',
         // multiline ||| triggers multiline in manifestYamlDoc
         filters: |||
           %s
         ||| % std.manifestYamlDoc({
-          jsonnet: ['jsonnet/**'],
-          addedModifiedJsonnet: [{ 'added|modified': 'jsonnet/**' }],
-          deletedJsonnet: [{ deleted: 'jsonnet/**' }],
-          deletedEnvs: [{ deleted: 'jsonnet/environments/**/main.jsonnet' }],
+          jsonnet: [jsonnetDir + '/**'],
+          addedModifiedJsonnet: [{ 'added|modified': jsonnetDir + '/**' }],
+          deletedJsonnet: [{ deleted: jsonnetDir + '/**' }],
+          deletedEnvs: [{ deleted: jsonnetDir + '/environments/**/main.jsonnet' }],
         }, true),
       }),
 
       ga.job.step.withName('Find modified Tanka environments')
       + ga.job.step.withId('modified')
       + ga.job.step.withIf("${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}")
+      + ga.job.step.withWorkingDirectory(sourceRepo + '/' + jsonnetDir)
       + ga.job.step.withRun(
         |||
           MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
           MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
-          echo "envs=$MODIFIED_ENVS" >> $GITHUB_OUTPUT
+          if [[ -n ${MODIFIED_ENVS} ]]; then
+              ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
+              echo "args=$ARGS" >> $GITHUB_OUTPUT
+          fi
         |||
       )
-      + ga.job.step.withWorkingDirectory('jsonnet')
       + ga.job.step.withEnv({
         SCRIPT: |||
           std.join(' ',
-            std.map(function(f) f[8:], ${{ steps.filter.outputs.addedModifiedJsonnet_files }})
-            + std.map(function(f) 'deleted:'+f[8:], ${{ steps.filter.outputs.deletedJsonnet_files }})
+            std.map(function(f) f[%s:], ${{ steps.filter.outputs.addedModifiedJsonnet_files }})
+            + std.map(function(f) 'deleted:'+f[%s:], ${{ steps.filter.outputs.deletedJsonnet_files }})
           )
-        |||,
+        ||| % [std.length(jsonnetDir) + 1, std.length(jsonnetDir) + 1],
       }),
 
       ga.job.step.withName('Find deleted Tanka environments')
@@ -84,8 +81,8 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withIf("${{ steps.filter.outputs.deletedEnvs == 'true' }}")
       + ga.job.step.withRun(
         |||
-          DELETED_ENVS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
-          echo "args=$DELETED_ENVS" >> $GITHUB_OUTPUT
+          DELETED_ARGS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
+          echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
         |||
       )
       + ga.job.step.withEnv({
@@ -97,75 +94,86 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withIf("${{ github.event_name == 'workflow_dispatch' }}")
       + ga.job.step.withRun(
         |||
-          echo "run as bulk"
           echo "bulk=true" >> $GITHUB_OUTPUT
+          ARGS="environments/ --merge-strategy=fail-on-conflicts"
+          echo "args=$ARGS" >> $GITHUB_OUTPUT
         |||
       ),
 
       ga.job.step.withName('Clear out manifests for bulk export')
-      + ga.job.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
+      + ga.job.step.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
       + ga.job.step.withRun('rm -rf manifests/*/')
-      + ga.job.step.withWorkingDirectory('_manifests'),
+      + ga.job.step.withWorkingDirectory(manifestsRepo),
 
       ga.job.step.withName('Compose Tanka arguments')
       + ga.job.step.withId('args')
-      + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
       + ga.job.step.withRun(
         |||
           if [ $BULK = 'true' ]; then
-              echo "run as bulk"
-
-              ARGS="environments/ --merge-strategy=fail-on-conflicts"
-
+              ARGS="$BULK_ARGS"
+              echo "args=$ARGS" >> $GITHUB_OUTPUT
+          elif [[ -n $MODIFIED_ARGS || -n $DELETED_ARGS ]]; then
+              ARGS="$MODIFIED_ARGS $DELETED_ARGS"
               echo "args=$ARGS" >> $GITHUB_OUTPUT
           else
-              ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs $DELETED_ENVS"
-
-              echo "args=$ARGS" >> $GITHUB_OUTPUT
+              echo "noop=true" >> $GITHUB_OUTPUT
           fi
         |||
       )
       + ga.job.step.withEnv({
         BULK: '${{ steps.bulk.outputs.bulk }}',
+        BULK_ARGS: '${{ steps.bulk.outputs.args }}',
 
-        MODIFIED_ENVS: '${{ steps.modified.outputs.envs }}',
-        DELETED_ENVS: '${{ steps.deleted.outputs.args }}',
+        MODIFIED_ARGS: '${{ steps.modified.outputs.args }}',
+        DELETED_ARGS: '${{ steps.deleted.outputs.args }}',
       }),
 
       ga.job.step.withName('Export manifests with Tanka')
       + ga.job.step.withId('export')
-      + ga.job.step.withIf("${{ steps.filter.outputs.jsonnet == 'true' }}")
-      + ga.job.step.withWorkingDirectory('jsonnet')
+      + ga.job.step.withIf("${{ steps.args.outputs.noop != 'true' }}")
+      + ga.job.step.withWorkingDirectory(sourceRepo + '/' + jsonnetDir)
       + ga.job.step.withRun(
         |||
           tk export \
-          ../_manifests/manifests/ \
+          ../$MANIFESTS_DIR/manifests/ \
           $ARGS \
           --recursive \
-          --format '%s'
-
-          cd ../_manifests/manifests
-          if [[ -n $(git status --porcelain .) ]]; then
-              echo "changes found"
-              git status .
-              echo "changes=true" >> $GITHUB_OUTPUT
-          fi
-        ||| % exportFormat
+          --format '$EXPORT_FORMAT'
+        |||
       )
       + ga.job.step.withEnv({
         ARGS: '${{ steps.args.outputs.args }}',
+        MANIFESTS_DIR: manifestsRepo,
+        EXPORT_FORMAT: std.strReplace(
+          |||
+            {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
+            {{ if .metadata.namespace }}{{.metadata.namespace}}
+            {{ else }}_cluster
+            {{ end }}/
+            {{.kind}}-{{.metadata.name}}
+          |||,
+          '\n',
+          ''
+        ),
+      }),
+
+      ga.job.step.withId('changed')
+      + ga.job.step.withUses('tj-actions/verify-changed-files@v20')
+      + ga.job.step.withWith({
+        files: 'manifests/**',
+        path: manifestsRepo,
       }),
 
       ga.job.step.withName('Check out branch for pull_request commit')
-      + ga.job.withIf("${{ steps.export.outputs.changes == 'true' && github.event_name == 'pull_request' }}")
-      + ga.job.step.withWorkingDirectory('_manifests')
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.step.withName('Make a commit to the manifests repository')
       + ga.job.step.withId('commit')
-      + ga.job.step.withIf("${{ steps.export.outputs.changes == 'true' }}")
-      + ga.job.step.withWorkingDirectory('_manifests')
+      + ga.job.step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun(
         |||
           git add manifests/
@@ -192,18 +200,18 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withName('Force push on pull_request')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
-      + ga.job.step.withWorkingDirectory('_manifests')
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git push -u -f origin pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.step.withName('Push on main')
-      + ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.export.outputs.changes == 'true' }}")
-      + ga.job.step.withWorkingDirectory('_manifests')
+      + ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git push'),
 
       ga.job.step.withName('Make no-op comment')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes != 'true' }}")
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: 'No changes',
@@ -212,7 +220,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withName('Make changes comment')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.export.outputs.changes == 'true' }}")
+      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: |||
