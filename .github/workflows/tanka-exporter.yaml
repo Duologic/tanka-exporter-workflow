@@ -21,10 +21,12 @@ jobs:
           filters: |
             "jsonnet":
               - "jsonnet/**"
-      - run: |
-          echo ${{ steps.fitler.outputs.changes }}
-          echo ${{ steps.fitler.outputs.jsonnet }}
-          echo ${{ steps.fitler.outputs.jsonnet_files }}
+      - env:
+          OUTPUT: |
+            ${{ steps.fitler.outputs.changes }}
+            ${{ steps.fitler.outputs.jsonnet }}
+            ${{ steps.fitler.outputs.jsonnet_files }}
+        run: "echo $OUTPUT"
       - if: "${{ github.event_name == 'workflow_dispatch' }}"
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
