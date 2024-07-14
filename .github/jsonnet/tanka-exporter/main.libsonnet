@@ -1,5 +1,10 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
+/* TODO:
+ * - Proper handling of multiple commit messages
+ * - Surface all authors on a PR merge
+ * - Rebase on last export
+ */
 
 local paths = [
   'jsonnet/**',
@@ -25,7 +30,10 @@ ga.workflow.on.push.withPaths(paths)
     + ga.job.withSteps([
       ga.job.step.withName('Checkout source repository')
       + ga.job.step.withUses('actions/checkout@v4')
-      + ga.job.step.withWith({ path: sourceRepo }),
+      + ga.job.step.withWith({
+        ref: '${{ github.event.pull_request.head.sha }}',  // need to read the right commit message
+        path: sourceRepo,
+      }),
 
       ga.job.step.withName('Checkout manifest repository')
       + ga.job.step.withUses('actions/checkout@v4')
