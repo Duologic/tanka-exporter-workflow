@@ -43,6 +43,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withUses('./.github/actions/install-tanka'),
+      ga.job.step.withUses('kobtea/setup-jsonnet-action@v2'),
 
       ga.job.step.withId('filter')
       + ga.job.step.withUses('dorny/paths-filter@v3')
@@ -51,13 +52,30 @@ ga.workflow.on.push.withPaths(paths)
         // multiline ||| triggers multiline in manifestYamlDoc
         filters: |||
           %s
-        ||| % std.manifestYamlDoc({ jsonnet: ['jsonnet/**'] }, true),
+        ||| % std.manifestYamlDoc({
+          jsonnet: ['jsonnet/**'],
+          addedModifiedJsonnet: [{ 'added|modified': 'jsonnet/**' }],
+          deletedJsonnet: [{ deleted: 'jsonnet/**' }],
+          deletedEnvs: [{ deleted: 'jsonnet/environments/**/main.jsonnet' }],
+        }, true),
       }),
 
-      ga.job.step.withRun('echo $CHANGED: $FILES')
+      ga.job.step.withRun(
+        |||
+          SCRIPT=<<EOF
+            std.join(' ',
+              std.map(function(f) f[8:], $CHANGED_FILES)
+              + std.map(function(f) 'deleted:'+f[8:], $DELETED_FILES)
+            )
+          EOF
+          MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
+          echo $MODIFIED_FILES
+          tk tool importers $MODIFIED_FILES
+        |||
+      )
       + ga.job.step.withEnv({
-        CHANGED: '${{ steps.filter.outputs.jsonnet }}',
-        FILES: '${{ steps.filter.outputs.jsonnet_files }}',
+        CHANGED_FILES: '${{ steps.filter.outputs.addedModifiedJsonnet_files }}',
+        DELETED_FILES: '${{ steps.filter.outputs.deletedJsonnet_files }}',
       }),
 
       ga.job.withIf("${{ github.event_name == 'workflow_dispatch' }}")

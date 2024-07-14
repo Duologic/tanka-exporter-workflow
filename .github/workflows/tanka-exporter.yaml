@@ -15,17 +15,33 @@ jobs:
           path: "_manifests"
           ref: "main"
       - uses: "./.github/actions/install-tanka"
+      - uses: "kobtea/setup-jsonnet-action@v2"
       - id: "filter"
         uses: "dorny/paths-filter@v3"
         with:
           filters: |
+            "addedModifiedJsonnet":
+              - "added|modified": "jsonnet/**"
+            "deletedEnvs":
+              - "deleted": "jsonnet/environments/**/main.jsonnet"
+            "deletedJsonnet":
+              - "deleted": "jsonnet/**"
             "jsonnet":
               - "jsonnet/**"
           list-files: "json"
       - env:
-          CHANGED: "${{ steps.filter.outputs.jsonnet }}"
-          FILES: "${{ steps.filter.outputs.jsonnet_files }}"
-        run: "echo $CHANGED: $FILES"
+          CHANGED_FILES: "${{ steps.filter.outputs.addedModifiedJsonnet_files }}"
+          DELETED_FILES: "${{ steps.filter.outputs.deletedJsonnet_files }}"
+        run: |
+          SCRIPT=<<EOF
+            std.join(' ',
+              std.map(function(f) f[8:], $CHANGED_FILES)
+              + std.map(function(f) 'deleted:'+f[8:], $DELETED_FILES)
+            )
+          EOF
+          MODIFIED_FILES=$(jsonnet -e "$SCRIPT")
+          echo $MODIFIED_FILES
+          tk tool importers $MODIFIED_FILES
       - if: "${{ github.event_name == 'workflow_dispatch' }}"
         run: "rm -rf manifests/*/"
         working-directory: "_manifests"
