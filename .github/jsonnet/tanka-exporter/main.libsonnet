@@ -24,7 +24,7 @@ ga.workflow.on.push.withPaths(paths)
     + ga.job.withSteps([
       ga.job.step.withName('Checkout source repository')
       + ga.job.step.withUses('actions/checkout@v4')
-      + ga.job.step.withEnv({ path: sourceRepo }),
+      + ga.job.step.withWith({ path: sourceRepo }),
 
       ga.job.step.withName('Checkout manifest repository')
       + ga.job.step.withUses('actions/checkout@v4')
