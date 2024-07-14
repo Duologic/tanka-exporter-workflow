@@ -87,14 +87,14 @@ jobs:
           fi
       - env:
           ARGS: "${{ steps.args.outputs.args }}"
+          EXPORT_DIR: "../../_manifests/manifests/"
           EXPORT_FORMAT: "{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{ .metadata.namespace }}{{ else }}_cluster{{ end }}/{{ .kind }}-{{ .metadata.name }}"
-          MANIFESTS_DIR: "_manifests"
         id: "export"
         if: "${{ steps.args.outputs.noop != 'true' }}"
         name: "Export manifests with Tanka"
         run: |
           tk export \
-          ../../$MANIFESTS_DIR/manifests/ \
+          $EXPORT_DIR \
           $ARGS \
           --recursive \
           --format "$EXPORT_FORMAT"
@@ -115,6 +115,7 @@ jobs:
           GIT_AUTHOR_NAME: "${{ github.actor }}"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_COMMITTER_NAME: "github-actions[bot]"
+          MANIFESTS_DIR: "manifests"
           MESSAGE: |
             
             --
@@ -122,12 +123,13 @@ jobs:
             - Event: ${{ github.event_name }}
             - Branch: ${{ github.base_ref }}
             - Build link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SOURCE_REPO: "../_source"
         id: "commit"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
         name: "Make a commit to the manifests repository"
         run: |
-          git add manifests/
-          git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
+          git add $MANIFESTS_DIR
+          git commit -m "$(git -C $SOURCE_REPO show -s --format=%B)$MESSAGE"
           git log -1 --format=fuller
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT

@@ -19,6 +19,7 @@ ga.workflow.on.push.withPaths(paths)
     local sourceRepo = '_source';
     local jsonnetDir = 'jsonnet';
     local manifestsRepo = '_manifests';
+    local manifestsDir = 'manifests';
 
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
@@ -102,7 +103,7 @@ ga.workflow.on.push.withPaths(paths)
 
       ga.job.step.withName('Clear out manifests for bulk export')
       + ga.job.step.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
-      + ga.job.step.withRun('rm -rf manifests/*/')
+      + ga.job.step.withRun('rm -rf ' + manifestsDir + '/*/')
       + ga.job.step.withWorkingDirectory(manifestsRepo),
 
       ga.job.step.withName('Compose Tanka arguments')
@@ -135,7 +136,7 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withRun(
         |||
           tk export \
-          ../../$MANIFESTS_DIR/manifests/ \
+          $EXPORT_DIR \
           $ARGS \
           --recursive \
           --format "$EXPORT_FORMAT"
@@ -143,7 +144,7 @@ ga.workflow.on.push.withPaths(paths)
       )
       + ga.job.step.withEnv({
         ARGS: '${{ steps.args.outputs.args }}',
-        MANIFESTS_DIR: manifestsRepo,
+        EXPORT_DIR: '../../' + manifestsRepo + '/' + manifestsDir + '/',
         EXPORT_FORMAT: std.strReplace(
           |||
             {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
@@ -176,14 +177,16 @@ ga.workflow.on.push.withPaths(paths)
       + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun(
         |||
-          git add manifests/
-          git commit -m "$(git -C ../ show -s --format=%B)$MESSAGE"
+          git add $MANIFESTS_DIR
+          git commit -m "$(git -C $SOURCE_REPO show -s --format=%B)$MESSAGE"
           git log -1 --format=fuller
           git config --global push.autoSetupRemote true
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
         |||
       )
       + ga.job.step.withEnv({
+        MANIFESTS_DIR: manifestsDir,
+        SOURCE_REPO: '../' + sourceRepo,
         GIT_AUTHOR_NAME: '${{ github.actor }}',
         GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
         GIT_COMMITTER_NAME: 'github-actions[bot]',
