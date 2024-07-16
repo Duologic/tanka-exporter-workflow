@@ -34,19 +34,23 @@
         '#withSteps':: super['#withStep'],
         withStep: self.withSteps,
         withSteps(value): {
-          steps:
-            (if std.isArray(value)
-             then value
-             else [value]),
+          runs+: {
+            steps:
+              (if std.isArray(value)
+               then value
+               else [value]),
+          },
         },
         '#withStepMixin':: {},
         '#withStepsMixin':: super['#withStepMixin'],
         withStepMixin: self.withStepsMixin,
         withStepsMixin(value): {
-          steps+:
-            (if std.isArray(value)
-             then value
-             else [value]),
+          runs+: {
+            steps+:
+              (if std.isArray(value)
+               then value
+               else [value]),
+          },
         },
       },
     },

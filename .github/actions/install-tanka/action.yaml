@@ -1,49 +1,36 @@
-name: Install Tanka
-description: Install Tanka
-
+# Generated with `make gen`
+description: "Install Tanka from the GitHub releases"
 inputs:
   version:
-    description: |
-      Version of Tanka to install.
-    default: 0.27.1
-
+    default: "0.27.1"
+    description: "Version of Tanka to install."
+name: "Install Tanka"
 runs:
-  using: composite
-
   steps:
-    - name: Restore cache
-      id: restore
-      uses: actions/cache/restore@v4
+    - id: "restore-tk-linux-amd64-${{ inputs.version }}"
+      name: "Restore cache tk-linux-amd64-${{ inputs.version }}"
+      uses: "actions/cache/restore@v4"
       with:
-        path: ${{ github.workspace }}/bin
-        key: tk-linux-amd64-${{ inputs.version }}
-
-    - name: Fetch Github Release Asset
-      id: fetch_asset
-      if: steps.restore.outputs.cache-hit != 'true'
-      uses: dsaltares/fetch-gh-release-asset@master
+        key: "tk-linux-amd64-${{ inputs.version }}"
+        path: "${{ github.workspace }}/bin"
+    - id: "fetch_asset"
+      if: "steps.restore-tk-linux-amd64-${{ inputs.version }}.outputs.cache-hit != 'true'"
+      name: "Fetch Github Release Asset"
+      uses: "dsaltares/fetch-gh-release-asset@master"
       with:
-        repo: "grafana/tanka"
-        version: "tags/v${{ inputs.version }}"
         file: "tk-linux-amd64"
-        target: ${{ github.workspace }}/bin/tk
-
-    - name: chmod
-      id: chmod
-      if: steps.fetch_asset.outcome == 'success'
-      shell: sh
-      run: |
-        chmod +x ${{ github.workspace }}/bin/tk
-
-    - name: Save to cache
-      id: save
-      if: steps.gunzip.outcome == 'success'
-      uses: actions/cache/save@v4
+        repo: "grafana/tanka"
+        target: "${{ github.workspace }}/bin/tk"
+        version: "tags/v${{ inputs.version }}"
+    - id: "chmod"
+      if: "steps.fetch_asset.outcome == 'success'"
+      name: "Make tk executable"
+      run: "chmod +x ${{ github.workspace }}/bin/tk"
+      shell: "sh"
+    - id: "save-tk-linux-amd64-${{ inputs.version }}"
+      name: "Save to cache tk-linux-amd64-${{ inputs.version }}"
+      uses: "actions/cache/save@v4"
       with:
-        path: ${{ github.workspace }}/bin
-        key: ${{ steps.restore.outputs.cache-primary-key }}
-
-    - name: Add binary to path
-      shell: sh
-      run: |
-        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+        key: "tk-linux-amd64-${{ inputs.version }}"
+        path: "${{ github.workspace }}/bin"
+  using: "composite"
