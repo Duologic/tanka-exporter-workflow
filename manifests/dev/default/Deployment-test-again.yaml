@@ -4,7 +4,7 @@ metadata:
   name: test-again
   namespace: default
 spec:
-  replicas: 140
+  replicas: 150
   selector:
     matchLabels:
       name: test-again
