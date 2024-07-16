@@ -52,6 +52,7 @@ ga.action.withName('Export Tanka environments')
   + step.withId('modified')
   + step.withIf("${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}')
+  + step.withShell('bash')
   + step.withRun(
     |||
       MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
@@ -75,6 +76,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Find deleted Tanka environments')
   + step.withId('deleted')
   + step.withIf("${{ steps.filter.outputs.deletedEnvs == 'true' }}")
+  + step.withShell('bash')
   + step.withRun(
     |||
       DELETED_ARGS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
@@ -88,6 +90,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Find out whether to do a bulk export')
   + step.withId('bulk')
   + step.withIf("${{ github.event_name == 'workflow_dispatch' }}")
+  + step.withShell('bash')
   + step.withRun(
     |||
       echo "bulk=true" >> $GITHUB_OUTPUT
@@ -99,6 +102,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Clear out manifests for bulk export')
   + step.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withShell('bash')
   + step.withRun('rm -rf $MANIFESTS_DIR/*/')
   + step.withEnv({
     MANIFESTS_DIR: '${{ inputs.target-directory }}',
@@ -106,6 +110,7 @@ ga.action.withName('Export Tanka environments')
 
   step.withName('Compose Tanka arguments')
   + step.withId('args')
+  + step.withShell('bash')
   + step.withRun(
     |||
       if [ $BULK = 'true' ]; then
@@ -131,6 +136,7 @@ ga.action.withName('Export Tanka environments')
   + step.withId('export')
   + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}')
+  + step.withShell('bash')
   + step.withRun(
     |||
       tk export \
@@ -165,6 +171,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Check out branch for pull_request commit')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withShell('bash')
   + step.withRun('git checkout -b pr-$PR')
   + step.withEnv({ PR: '${{ github.event.number }}' }),
 
@@ -172,6 +179,7 @@ ga.action.withName('Export Tanka environments')
   + step.withId('commit')
   + step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withShell('bash')
   + step.withRun(
     |||
       git add $MANIFESTS_DIR
@@ -202,12 +210,14 @@ ga.action.withName('Export Tanka environments')
   step.withName('Force push on pull_request')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withShell('bash')
   + step.withRun('git push -u -f origin pr-$PR')
   + step.withEnv({ PR: '${{ github.event.number }}' }),
 
   step.withName('Push on main')
   + step.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withShell('bash')
   + step.withRun('git push'),
 
   step.withName('Make no-op comment')
