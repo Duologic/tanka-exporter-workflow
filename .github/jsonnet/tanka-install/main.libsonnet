@@ -1,39 +1,7 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
-
 local step = ga.action.runs.composite.step;
 
-// TODO: make reusable steps available through library
-
-local cache = {
-  restoreStep(path, key, idSuffix=''):
-    step.withName('Restore cache ' + key)
-    + step.withId('restore' + idSuffix)
-    + step.withUses('actions/cache/restore@v4')
-    + step.withWith({
-      path: path,
-      key: key,
-    }),
-
-  saveStep(path, key, idSuffix=''):
-    step.withName('Save to cache ' + key)
-    + step.withId('save' + idSuffix)
-    + step.withUses('actions/cache/save@v4')
-    + step.withWith({
-      path: path,
-      key: '${{ steps.restore%s.outputs.cache-primary-key }}' % idSuffix,
-    }),
-};
-
-local fetchGitHubReleaseAsset(repo, version, file, target) =
-  step.withName('Fetch Github Release Asset')
-  + step.withId('fetch_asset')
-  + step.withUses('dsaltares/fetch-gh-release-asset@master')
-  + step.withWith({
-    repo: repo,
-    version: version,
-    file: file,
-    target: target,
-  });
+local common = import 'common/main.libsonnet';
 
 local path = '${{ github.workspace }}/bin';
 local key = 'tk-linux-amd64-${{ inputs.version }}';
@@ -48,10 +16,10 @@ ga.action.withName('Install Tanka')
 })
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
-  cache.restoreStep(path, key),
+  common.cache.restoreStep(path, key),
 
   step.withIf("steps.restore.outputs.cache-hit != 'true'")
-  + fetchGitHubReleaseAsset(
+  + common.fetchGitHubReleaseAsset(
     'grafana/tanka',
     'tags/v${{ inputs.version }}',
     'tk-linux-amd64',
@@ -67,5 +35,5 @@ ga.action.withName('Install Tanka')
   + step.withShell('sh')
   + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
 
-  cache.saveStep(path, key),
+  common.cache.saveStep(path, key),
 ])

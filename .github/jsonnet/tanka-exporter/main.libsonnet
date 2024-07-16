@@ -179,7 +179,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withName('Check out branch for pull_request commit')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
       + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git checkout -b pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
@@ -216,18 +216,18 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withName('Force push on pull_request')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
       + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git push -u -f origin pr-$PR')
       + ga.job.step.withEnv({ PR: '${{ github.event.number }}' }),
 
       ga.job.step.withName('Push on main')
-      + ga.job.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
       + ga.job.step.withWorkingDirectory(manifestsRepo)
       + ga.job.step.withRun('git push'),
 
       ga.job.step.withName('Make no-op comment')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}")
+      + ga.job.step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: 'No changes',
@@ -236,7 +236,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       ga.job.step.withName('Make changes comment')
-      + ga.job.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
+      + ga.job.step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
       + ga.job.step.withUses('thollander/actions-comment-pull-request@v2')
       + ga.job.step.withWith({
         message: |||
