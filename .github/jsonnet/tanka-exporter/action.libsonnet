@@ -65,7 +65,7 @@ ga.action.withName('Export Tanka environments')
   )
   + step.withEnv({
     SCRIPT: |||
-      local prefixLength = std.length(${{ inputs.tanka-root }}) + 1;
+      local prefixLength = std.length('${{ inputs.tanka-root }}/');
       std.join(' ',
         std.map(function(f) f[prefixLength:], ${{ steps.filter.outputs.addedModifiedJsonnet_files }})
         + std.map(function(f) 'deleted:'+f[prefixLength:], ${{ steps.filter.outputs.deletedJsonnet_files }})
