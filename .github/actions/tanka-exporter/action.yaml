@@ -26,7 +26,7 @@ runs:
         ref: "${{ env.action_ref }}"
         repository: "${{ env.action_repo }}"
     - name: "Install Tanka"
-      uses: "./_tanka-exporter-checkout/.github/actions/install-tanka"
+      uses: "./_tanka-exporter-checkout/.github/actions/tanka-install"
     - name: "Install Jsonnet"
       uses: "kobtea/setup-jsonnet-action@v2"
     - id: "filter"

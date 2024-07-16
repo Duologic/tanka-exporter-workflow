@@ -3,7 +3,7 @@ local step = ga.action.runs.composite.step;
 
 local common = import 'common/main.libsonnet';
 
-local checkoutPath = '_tanka-exporter-checkout';
+local actionCheckoutPath = '_tanka-exporter-checkout';
 
 ga.action.withName('Export Tanka environments')
 + ga.action.withDescription('')
@@ -23,10 +23,10 @@ ga.action.withName('Export Tanka environments')
 })
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
-  common.actionRepo.checkoutStep(checkoutPath),
+  common.actionRepo.checkoutStep(actionCheckoutPath),
 
   step.withName('Install Tanka')
-  + step.withUses('./%s/.github/actions/install-tanka' % checkoutPath),
+  + step.withUses('./%s/.github/actions/tanka-install' % actionCheckoutPath),
 
   step.withName('Install Jsonnet')
   + step.withUses('kobtea/setup-jsonnet-action@v2'),
