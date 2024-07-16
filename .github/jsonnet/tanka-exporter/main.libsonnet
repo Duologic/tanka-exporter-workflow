@@ -1,7 +1,6 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 /* TODO:
- * - Turn into a composite action
  * - Rebase on last export (needed for high-traffic repositories)
  * - Surface all authors on a PR merge
  * - Handling of multiple commit messages exported (related to rebase)
@@ -47,7 +46,8 @@ ga.workflow.on.push.withPaths(paths)
         path: manifestsRepo,
       }),
 
-      ga.job.step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
+      ga.job.step.withName('Export Tanka manifests')
+      + ga.job.step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
       + ga.job.step.withWith({
         'source-repository': sourceRepo,
         'tanka-root': jsonnetDir,

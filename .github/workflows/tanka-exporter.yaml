@@ -16,7 +16,8 @@ jobs:
         with:
           path: "_manifests"
           ref: "main"
-      - uses: "./_source/.github/actions/tanka-exporter"
+      - name: "Export Tanka manifests"
+        uses: "./_source/.github/actions/tanka-exporter"
         with:
           source-repository: "_source"
           tanka-root: "jsonnet"
