@@ -59,10 +59,13 @@ ga.action.withName('Install Tanka')
   ),
 
   step.withName('Make tk executable')
-  + step.withId('chmod')
   + step.withIf("steps.fetch_asset.outcome == 'success'")
   + step.withShell('sh')
   + step.withRun('chmod +x %s/tk' % path),
+
+  step.withName('Add binary to path')
+  + step.withShell('sh')
+  + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
 
   cache.saveStep(path, key),
 ])
