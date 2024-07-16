@@ -4,5 +4,5 @@ local manifest(f) =
 {
   'workflows/tanka-exporter.yaml': manifest(import './tanka-exporter/main.libsonnet'),
   'actions/install-tanka/action.yaml': manifest(import './tanka-install/main.libsonnet'),
-  'actions/tanka-exporter/action.yaml': manifest(import './tanka-exporter/main.libsonnet'),
+  'actions/tanka-exporter/action.yaml': manifest(import './tanka-exporter/action.libsonnet'),
 }
