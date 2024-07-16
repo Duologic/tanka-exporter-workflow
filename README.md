@@ -1,6 +1,6 @@
 # Tanka Exporter for GitHub Actions
 
-This repository contains a composite GitHub Action to export Kubernetes manifests to git using [Tanka](tanka.dev).
+This repository contains a composite GitHub Action to export Kubernetes manifests to git using [Tanka](https://tanka.dev).
 
 _Really? Where does this come from?_ This is a reference implementation of the CI/CD workflow used within Grafana Labs.
 
