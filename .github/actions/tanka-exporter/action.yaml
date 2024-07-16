@@ -43,7 +43,7 @@ runs:
           "jsonnet":
             - "${{ inputs.tanka-root }}/**"
         list-files: "json"
-        working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}"
+        working-directory: "${{ inputs.source-repository }}"
     - env:
         SCRIPT: |
           local prefixLength = std.length(${{ inputs.tanka-root }}) + 1;
@@ -124,7 +124,7 @@ runs:
       name: "Check if manifests changed"
       uses: "tj-actions/verify-changed-files@v20"
       with:
-        path: "${{ github.workspace }}/${{ inputs.target-repository }}"
+        path: "${{ inputs.target-repository }}"
     - env:
         PR: "${{ github.event.number }}"
       if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}"

@@ -35,7 +35,7 @@ ga.action.withName('Export Tanka environments')
   + step.withId('filter')
   + step.withUses('dorny/paths-filter@v3')
   + step.withWith({
-    'working-directory': '${{ github.workspace }}/${{ inputs.source-repository }}',
+    'working-directory': '${{ inputs.source-repository }}',
     'list-files': 'json',
     // multiline ||| triggers multiline in std.manifestYamlDoc
     filters: |||
@@ -165,7 +165,7 @@ ga.action.withName('Export Tanka environments')
   + step.withId('changed')
   + step.withUses('tj-actions/verify-changed-files@v20')
   + step.withWith({
-    path: '${{ github.workspace }}/${{ inputs.target-repository }}',
+    path: '${{ inputs.target-repository }}',
   }),
 
   step.withName('Check out branch for pull_request commit')
