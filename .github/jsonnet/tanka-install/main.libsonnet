@@ -20,7 +20,7 @@ local cache = {
     + step.withUses('actions/cache/save@v4')
     + step.withWith({
       path: path,
-      key: key,
+      key: '${{ steps.restore%s.outputs.cache-primary-key }}' % idSuffix,
     }),
 };
 

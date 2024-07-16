@@ -31,6 +31,6 @@ runs:
       name: "Save to cache tk-linux-amd64-${{ inputs.version }}"
       uses: "actions/cache/save@v4"
       with:
-        key: "tk-linux-amd64-${{ inputs.version }}"
+        key: "${{ steps.restore.outputs.cache-primary-key }}"
         path: "${{ github.workspace }}/bin"
   using: "composite"
