@@ -7,14 +7,14 @@ inputs:
 name: "Install Tanka"
 runs:
   steps:
-    - id: "restore-tk-linux-amd64-${{ inputs.version }}"
+    - id: "restore"
       name: "Restore cache tk-linux-amd64-${{ inputs.version }}"
       uses: "actions/cache/restore@v4"
       with:
         key: "tk-linux-amd64-${{ inputs.version }}"
         path: "${{ github.workspace }}/bin"
     - id: "fetch_asset"
-      if: "steps.restore-tk-linux-amd64-${{ inputs.version }}.outputs.cache-hit != 'true'"
+      if: "steps.restore.outputs.cache-hit != 'true'"
       name: "Fetch Github Release Asset"
       uses: "dsaltares/fetch-gh-release-asset@master"
       with:
@@ -27,7 +27,7 @@ runs:
       name: "Make tk executable"
       run: "chmod +x ${{ github.workspace }}/bin/tk"
       shell: "sh"
-    - id: "save-tk-linux-amd64-${{ inputs.version }}"
+    - id: "save"
       name: "Save to cache tk-linux-amd64-${{ inputs.version }}"
       uses: "actions/cache/save@v4"
       with:

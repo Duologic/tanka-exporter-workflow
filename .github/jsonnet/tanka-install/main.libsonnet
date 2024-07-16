@@ -5,18 +5,18 @@ local step = ga.action.runs.composite.step;
 // TODO: make reusable steps available through library
 
 local cache = {
-  restoreStep(path, key):
+  restoreStep(path, key, idSuffix=''):
     step.withName('Restore cache ' + key)
-    + step.withId('restore-' + key)
+    + step.withId('restore' + idSuffix)
     + step.withUses('actions/cache/restore@v4')
     + step.withWith({
       path: path,
       key: key,
     }),
 
-  saveStep(path, key):
+  saveStep(path, key, idSuffix=''):
     step.withName('Save to cache ' + key)
-    + step.withId('save-' + key)
+    + step.withId('save' + idSuffix)
     + step.withUses('actions/cache/save@v4')
     + step.withWith({
       path: path,
@@ -50,7 +50,7 @@ ga.action.withName('Install Tanka')
 + ga.action.runs.composite.withSteps([
   cache.restoreStep(path, key),
 
-  step.withIf("steps.restore-%s.outputs.cache-hit != 'true'" % key)
+  step.withIf("steps.restore.outputs.cache-hit != 'true'")
   + fetchGitHubReleaseAsset(
     'grafana/tanka',
     'tags/v${{ inputs.version }}',
