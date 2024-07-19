@@ -5,11 +5,11 @@
       "source": {
         "git": {
           "remote": "https://github.com/grafana/jsonnet-libs.git",
-          "subdir": "ksonnet-util"
+          "subdir": "tanka-util"
         }
       },
-      "version": "49029fcf5e33da03d7dffda631c03dd5e989a1d4",
-      "sum": "0y3AFX9LQSpfWTxWKSwoLgbt0Wc9nnCwhMH2szKzHv0="
+      "version": "1d877bb0651ef92176f651d0be473c06e372a8a0",
+      "sum": "ShSIissXdvCy1izTCDZX6tY7qxCoepE5L+WJ52Hw7ZQ="
     },
     {
       "source": {
