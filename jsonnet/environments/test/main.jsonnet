@@ -13,7 +13,16 @@ local resources =
   );
 
 [
-  tk.environment.new(app, namespace, cluster.apiServer)
+  tk.environment.new(
+    std.join('/', [
+      'environments',
+      app,
+      cluster.name,
+      namespace,
+    ]),
+    namespace,
+    cluster.apiServer
+  )
   + tk.environment.withLabels({
     cluster_name: cluster.name,
   })
