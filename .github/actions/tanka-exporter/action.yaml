@@ -84,7 +84,10 @@ runs:
         MANIFESTS_DIR: "${{ inputs.target-directory }}"
       if: "${{ steps.bulk.outputs.bulk == 'true' }}"
       name: "Clear out manifests for bulk export"
-      run: "rm -rf $MANIFESTS_DIR/*/"
+      run: |
+        list=($MANIFESTS_DIR/*/)
+        echo ${list[@]}
+        rm -rf $MANIFESTS_DIR/*/
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
     - env:
