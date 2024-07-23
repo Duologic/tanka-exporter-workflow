@@ -113,7 +113,7 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(
     |||
-      if [ $BULK = 'true' ]; then
+      if [[ $BULK = 'true' ]]; then
           ARGS="$BULK_ARGS"
           echo "args=$ARGS" >> $GITHUB_OUTPUT
       elif [[ -n $MODIFIED_ARGS || -n $DELETED_ARGS ]]; then
