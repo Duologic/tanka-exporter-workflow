@@ -1,3 +1,15 @@
 {
-    "dev/default/Deployment-test-again.yaml": "environments/default/main.jsonnet"
+    "dev-eu-west-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "dev-eu-west-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "dev-us-central-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "dev-us-central-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "dev/default/Deployment-test-again.yaml": "environments/default/main.jsonnet",
+    "prod-eu-west-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "prod-eu-west-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "prod-us-central-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "prod-us-central-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "stag-eu-west-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "stag-eu-west-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "stag-us-central-0/test/Deployment-test-again.yaml": "environments/test/main.jsonnet",
+    "stag-us-central-1/test/Deployment-test-again.yaml": "environments/test/main.jsonnet"
 }

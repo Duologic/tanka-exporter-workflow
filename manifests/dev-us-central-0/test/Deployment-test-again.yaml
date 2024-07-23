@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-again
+  namespace: test
+spec:
+  replicas: 150
+  selector:
+    matchLabels:
+      name: test-again
+  template:
+    metadata:
+      labels:
+        name: test-again
+    spec:
+      containers: []
