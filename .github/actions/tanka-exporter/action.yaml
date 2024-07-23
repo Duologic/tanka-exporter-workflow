@@ -73,7 +73,7 @@ runs:
         echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
       shell: "bash"
     - id: "bulk"
-      if: "${{ github.event_name == 'workflow_dispatch' }}"
+      if: "${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main' }}"
       name: "Find out whether to do a bulk export"
       run: |
         echo "bulk=true" >> $GITHUB_OUTPUT
