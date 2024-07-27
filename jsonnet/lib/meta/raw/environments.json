@@ -6,7 +6,7 @@
          "labels": {
             "cluster_name": "dev-eu-west-0"
          },
-         "name": "environments/namespaces/dev-eu-west-0",
+         "name": "environments/namespaces/dev-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -23,7 +23,7 @@
          "labels": {
             "cluster_name": "dev-eu-west-1"
          },
-         "name": "environments/namespaces/dev-eu-west-1",
+         "name": "environments/namespaces/dev-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -40,7 +40,7 @@
          "labels": {
             "cluster_name": "dev-us-central-0"
          },
-         "name": "environments/namespaces/dev-us-central-0",
+         "name": "environments/namespaces/dev-us-central-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -57,7 +57,7 @@
          "labels": {
             "cluster_name": "dev-us-central-1"
          },
-         "name": "environments/namespaces/dev-us-central-1",
+         "name": "environments/namespaces/dev-us-central-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -74,7 +74,7 @@
          "labels": {
             "cluster_name": "prod-eu-west-0"
          },
-         "name": "environments/namespaces/prod-eu-west-0",
+         "name": "environments/namespaces/prod-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -91,7 +91,7 @@
          "labels": {
             "cluster_name": "prod-eu-west-1"
          },
-         "name": "environments/namespaces/prod-eu-west-1",
+         "name": "environments/namespaces/prod-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -108,7 +108,7 @@
          "labels": {
             "cluster_name": "prod-us-central-0"
          },
-         "name": "environments/namespaces/prod-us-central-0",
+         "name": "environments/namespaces/prod-us-central-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -125,7 +125,7 @@
          "labels": {
             "cluster_name": "prod-us-central-1"
          },
-         "name": "environments/namespaces/prod-us-central-1",
+         "name": "environments/namespaces/prod-us-central-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -142,7 +142,7 @@
          "labels": {
             "cluster_name": "stag-eu-west-0"
          },
-         "name": "environments/namespaces/stag-eu-west-0",
+         "name": "environments/namespaces/stag-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -159,7 +159,7 @@
          "labels": {
             "cluster_name": "stag-eu-west-1"
          },
-         "name": "environments/namespaces/stag-eu-west-1",
+         "name": "environments/namespaces/stag-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -176,7 +176,7 @@
          "labels": {
             "cluster_name": "stag-us-central-0"
          },
-         "name": "environments/namespaces/stag-us-central-0",
+         "name": "environments/namespaces/stag-us-central-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -193,7 +193,7 @@
          "labels": {
             "cluster_name": "stag-us-central-1"
          },
-         "name": "environments/namespaces/stag-us-central-1",
+         "name": "environments/namespaces/stag-us-central-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
