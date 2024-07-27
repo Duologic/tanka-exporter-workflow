@@ -3,8 +3,8 @@ local clusters = import 'meta/clusters.libsonnet';
 local namespaces = import 'meta/namespaces.libsonnet';
 local tk = import 'tanka/main.libsonnet';
 
-local namespace = 'namespaces';
-local app = namespace;
+local app = 'namespaces';
+local namespace = 'default';  // these are cluster-wide resources but Tanka requires a default namespace
 
 local resources = [
   k.core.v1.namespace.new(namespace)
