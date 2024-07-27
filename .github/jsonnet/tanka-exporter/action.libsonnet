@@ -28,6 +28,9 @@ ga.action.withName('Export Tanka environments')
   step.withName('Install Tanka')
   + step.withUses('./%s/.github/actions/tanka-install' % actionCheckoutPath),
 
+  step.withName('Install jrsonnet')
+  + step.withUses('./%s/.github/actions/jrsonnet-install' % actionCheckoutPath),
+
   step.withName('Install Jsonnet')
   + step.withUses('kobtea/setup-jsonnet-action@v2'),
 
