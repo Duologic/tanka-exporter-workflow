@@ -168,6 +168,7 @@ ga.action.withName('Export Tanka environments')
       ''
     ),
   }),
+
   step.withName('Check if manifests changed')
   + step.withId('changed')
   + step.withUses('tj-actions/verify-changed-files@v20')

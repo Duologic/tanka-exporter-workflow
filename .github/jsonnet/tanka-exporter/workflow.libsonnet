@@ -1,4 +1,7 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
+local step = ga.job.step;
+
+local common = import 'common/main.libsonnet';
 
 /* TODO:
  * - Rebase on last export (needed for high-traffic repositories)
@@ -32,27 +35,52 @@ ga.workflow.on.push.withPaths(paths)
   export:
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
-      ga.job.step.withName('Checkout source repository')
-      + ga.job.step.withUses('actions/checkout@v4')
-      + ga.job.step.withWith({
+      step.withName('Checkout source repository')
+      + step.withUses('actions/checkout@v4')
+      + step.withWith({
         ref: '${{ github.event.pull_request.head.sha }}',  // need to read the right commit message
         path: sourceRepo,
       }),
 
-      ga.job.step.withName('Checkout manifest repository')
-      + ga.job.step.withUses('actions/checkout@v4')
-      + ga.job.step.withWith({
+      step.withName('Checkout manifest repository')
+      + step.withUses('actions/checkout@v4')
+      + step.withWith({
         ref: 'main',
         path: manifestsRepo,
       }),
 
-      ga.job.step.withName('Export Tanka manifests')
-      + ga.job.step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
-      + ga.job.step.withWith({
+      step.withName('Export Tanka manifests')
+      + step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
+      + step.withWith({
         'source-repository': sourceRepo,
         'tanka-root': jsonnetDir,
         'target-repository': manifestsRepo,
         'target-directory': manifestsDir,
       }),
+    ]),
+
+  validate:
+    local actionCheckoutPath = '_actions-checkout';
+    ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withSteps([
+      step.withName('Checkout source repository')
+      + step.withUses('actions/checkout@v4'),
+
+      common.actionRepo.checkoutStep(actionCheckoutPath),
+
+      step.withName('Install Tanka')
+      + step.withUses('./%s/.github/actions/tanka-install' % actionCheckoutPath),
+
+      step.withName('Run Tanka')
+      + step.withRun('make lib/meta/raw/environments.json')
+      + step.withWorkingDirectory('jsonnet'),
+
+      step.withName('Check if file changed')
+      + step.withId('changed')
+      + step.withUses('tj-actions/verify-changed-files@v20'),
+
+      step.withName('No files changed')
+      + step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
+      + step.withRun("echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
     ]),
 })
