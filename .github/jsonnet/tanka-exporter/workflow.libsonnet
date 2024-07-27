@@ -60,16 +60,13 @@ ga.workflow.on.push.withPaths(paths)
     ]),
 
   validate:
-    local actionCheckoutPath = '_actions-checkout';
     ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4'),
 
-      common.actionRepo.checkoutStep(actionCheckoutPath),
-
       step.withName('Install Tanka')
-      + step.withUses('./%s/.github/actions/tanka-install' % actionCheckoutPath),
+      + step.withUses('.github/actions/tanka-install'),
 
       step.withName('Run Tanka')
       + step.withRun('make lib/meta/raw/environments.json')

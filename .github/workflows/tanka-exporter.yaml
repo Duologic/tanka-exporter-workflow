@@ -28,17 +28,8 @@ jobs:
     steps:
       - name: "Checkout source repository"
         uses: "actions/checkout@v4"
-      - env:
-          action_ref: "${{ github.action_ref }}"
-          action_repo: "${{ github.action_repository }}"
-        name: "Checkout"
-        uses: "actions/checkout@v4"
-        with:
-          path: "_actions-checkout"
-          ref: "${{ env.action_ref }}"
-          repository: "${{ env.action_repo }}"
       - name: "Install Tanka"
-        uses: "./_actions-checkout/.github/actions/tanka-install"
+        uses: ".github/actions/tanka-install"
       - name: "Run Tanka"
         run: "make lib/meta/raw/environments.json"
         working-directory: "jsonnet"
