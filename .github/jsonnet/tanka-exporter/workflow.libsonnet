@@ -81,6 +81,7 @@ ga.workflow.on.push.withPaths(paths)
 
       step.withName('No files changed')
       + step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
-      + step.withRun("git diff && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
+      + step.withEnv({ ALL_CHANGED_FILES: '${{ steps.changed-files.outputs.all_changed_files }}' })
+      + step.withRun("echo $ALL_CHANGED_FILES && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
     ]),
 })
