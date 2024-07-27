@@ -92,7 +92,8 @@ ga.action.withName('Export Tanka environments')
 
   step.withName('Find out whether to do a bulk export')
   + step.withId('bulk')
-  + step.withIf("${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main' }}")
+  // FIXME: The bulk exporter should also run as a cron to detect drift on main pushes
+  + step.withIf("${{ github.event_name == 'workflow_dispatch' }}")
   + step.withShell('bash')
   + step.withRun(
     |||
