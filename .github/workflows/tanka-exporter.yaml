@@ -32,7 +32,7 @@ jobs:
         uses: "./.github/actions/tanka-install"
       - name: "Install jrsonnet"
         uses: "./.github/actions/jrsonnet-install"
-      - name: "Run Tanka"
+      - name: "Run make lib/meta/raw/environments.json"
         run: "make lib/meta/raw/environments.json"
         working-directory: "jsonnet"
       - id: "changed"
