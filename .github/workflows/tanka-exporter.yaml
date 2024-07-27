@@ -39,8 +39,7 @@ jobs:
         name: "Check if file changed"
         uses: "tj-actions/verify-changed-files@v20"
         with:
-          files:
-            - "jsonnet"
+          files: "jsonnet"
       - env:
           CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
