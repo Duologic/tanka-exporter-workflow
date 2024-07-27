@@ -30,6 +30,8 @@ jobs:
         uses: "actions/checkout@v4"
       - name: "Install Tanka"
         uses: "./.github/actions/tanka-install"
+      - name: "Install jrsonnet"
+        uses: "./.github/actions/jrsonnet-install"
       - name: "Run Tanka"
         run: "make lib/meta/raw/environments.json"
         working-directory: "jsonnet"

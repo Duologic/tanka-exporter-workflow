@@ -68,6 +68,9 @@ ga.workflow.on.push.withPaths(paths)
       step.withName('Install Tanka')
       + step.withUses('./.github/actions/tanka-install'),
 
+      step.withName('Install jrsonnet')
+      + step.withUses('./.github/actions/jrsonnet-install'),
+
       step.withName('Run Tanka')
       + step.withRun('make lib/meta/raw/environments.json')
       + step.withWorkingDirectory('jsonnet'),
