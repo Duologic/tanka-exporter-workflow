@@ -40,7 +40,7 @@ jobs:
         uses: "tj-actions/verify-changed-files@v20"
       - if: "${{ steps.changed.outputs.files_changed == 'true' }}"
         name: "No files changed"
-        run: "echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
+        run: "git diff && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
 "on":
   pull_request:
     paths:
