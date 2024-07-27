@@ -35,5 +35,6 @@ ga.action.withName('Install Tanka')
   + step.withShell('sh')
   + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
 
-  common.cache.saveStep(path, key),
+  common.cache.saveStep(path, key)
+  + step.withIf("steps.fetch_asset.outcome == 'success'"),
 ])

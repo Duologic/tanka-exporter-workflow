@@ -30,6 +30,7 @@ runs:
       run: "echo \"${{ github.workspace }}/bin\" >> $GITHUB_PATH"
       shell: "sh"
     - id: "save"
+      if: "steps.fetch_asset.outcome == 'success'"
       name: "Save to cache tk-linux-amd64-${{ inputs.version }}"
       uses: "actions/cache/save@v4"
       with:
