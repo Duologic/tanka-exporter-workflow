@@ -2,7 +2,7 @@
 description: "Install jrsonnet from the GitHub releases"
 inputs:
   version:
-    default: "0.5.0-pre96"
+    default: "v0.5.0-pre96-test"
     description: "Version of jrsonnet to install."
 name: "Install jrsonnet"
 runs:
