@@ -62,6 +62,7 @@ ga.action.withName('Export Tanka environments')
       MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
       if [[ -n ${MODIFIED_ENVS} ]]; then
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
+          echo "args=$ARGS"
           echo "args=$ARGS" >> $GITHUB_OUTPUT
       fi
     |||
