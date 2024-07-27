@@ -77,14 +77,14 @@ ga.workflow.on.push.withPaths(paths)
 
       step.withName('Check if file changed')
       + step.withId('changed')
-      + step.withUses('tj-actions/verify-changed-files@v20'),
+      + step.withUses('tj-actions/verify-changed-files@v20')
+      + step.withWith({ files: ['jsonnet'] }),
 
       step.withName('No files changed')
       + step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
       + step.withEnv({
-        ALL_CHANGED_FILES: '${{ steps.changed.outputs.changed_files }}',
-        HAS_CHANGED: '${{ steps.changed.outputs.files_changed }}',
+        CHANGED_FILES: '${{ steps.changed.outputs.changed_files }}',
       })
-      + step.withRun("echo $ALL_CHANGED_FILES && echo $HAS_CHANGED && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
+      + step.withRun("echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
     ]),
 })

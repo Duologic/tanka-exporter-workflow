@@ -38,12 +38,14 @@ jobs:
       - id: "changed"
         name: "Check if file changed"
         uses: "tj-actions/verify-changed-files@v20"
+        with:
+          files:
+            - "jsonnet"
       - env:
-          ALL_CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
-          HAS_CHANGED: "${{ steps.changed.outputs.files_changed }}"
+          CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
         name: "No files changed"
-        run: "echo $ALL_CHANGED_FILES && echo $HAS_CHANGED && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
+        run: "echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
 "on":
   pull_request:
     paths:
