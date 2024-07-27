@@ -39,10 +39,11 @@ jobs:
         name: "Check if file changed"
         uses: "tj-actions/verify-changed-files@v20"
       - env:
-          ALL_CHANGED_FILES: "${{ steps.changed.outputs.all_changed_files }}"
+          ALL_CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
+          HAS_CHANGED: "${{ steps.changed.outputs.files_changed }}"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
         name: "No files changed"
-        run: "echo $ALL_CHANGED_FILES && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
+        run: "echo $ALL_CHANGED_FILES && echo $HAS_CHANGED && echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
 "on":
   pull_request:
     paths:
