@@ -59,7 +59,7 @@ ga.action.withName('Export Tanka environments')
   + step.withRun(
     |||
       MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
-      MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
+      MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
       if [[ -n ${MODIFIED_ENVS} ]]; then
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
           echo "args=$ARGS" >> $GITHUB_OUTPUT
@@ -168,6 +168,7 @@ ga.action.withName('Export Tanka environments')
       ''
     ),
   }),
+
   step.withName('Check if manifests changed')
   + step.withId('changed')
   + step.withUses('tj-actions/verify-changed-files@v20')

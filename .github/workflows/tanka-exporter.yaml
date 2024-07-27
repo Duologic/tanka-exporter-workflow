@@ -23,6 +23,28 @@ jobs:
           tanka-root: "jsonnet"
           target-directory: "manifests"
           target-repository: "_manifests"
+  validate:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout source repository"
+        uses: "actions/checkout@v4"
+      - name: "Install Tanka"
+        uses: "./.github/actions/tanka-install"
+      - name: "Install jrsonnet"
+        uses: "./.github/actions/jrsonnet-install"
+      - name: "Run make lib/meta/raw/environments.json"
+        run: "make lib/meta/raw/environments.json"
+        working-directory: "jsonnet"
+      - id: "changed"
+        name: "Check if file changed"
+        uses: "tj-actions/verify-changed-files@v20"
+        with:
+          files: "jsonnet"
+      - env:
+          CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
+        if: "${{ steps.changed.outputs.files_changed == 'true' }}"
+        name: "No files changed"
+        run: "echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
 "on":
   pull_request:
     paths:
