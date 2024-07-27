@@ -59,7 +59,7 @@ ga.action.withName('Export Tanka environments')
   + step.withRun(
     |||
       MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
-      MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
+      MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
       if [[ -n ${MODIFIED_ENVS} ]]; then
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
           echo "args=$ARGS"

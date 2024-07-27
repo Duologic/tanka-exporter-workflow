@@ -58,7 +58,7 @@ runs:
       name: "Find modified Tanka environments"
       run: |
         MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
-        MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES)
+        MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
         if [[ -n ${MODIFIED_ENVS} ]]; then
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
             echo "args=$ARGS"
