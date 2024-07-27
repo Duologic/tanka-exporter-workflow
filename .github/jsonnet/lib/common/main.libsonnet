@@ -25,17 +25,6 @@ local step = ga.action.runs.composite.step;
       }),
   },
 
-  fetchGitHubReleaseAsset(repo, version, file, target):
-    step.withName('Fetch Github Release Asset')
-    + step.withId('fetch_asset')
-    + step.withUses('dsaltares/fetch-gh-release-asset@master')
-    + step.withWith({
-      repo: repo,
-      version: version,
-      file: file,
-      target: target,
-    }),
-
   actionRepo: {
     // When a Composite action uses an action relative in the same repository, it'll need to do a checkout of that repository so that downstream usage can access it.
     checkoutStep(path):
@@ -53,7 +42,6 @@ local step = ga.action.runs.composite.step;
   },
 
   fetchGitHubRelease: {
-
     step(repo, version, file, target):
       step.withName('Fetch Github Release Asset')
       + step.withId('fetch_asset')
