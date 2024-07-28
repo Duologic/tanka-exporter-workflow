@@ -122,6 +122,67 @@ runs:
         --format "$EXPORT_FORMAT"
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
+    - env:
+        EXPORT_DIR: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/"
+        GENERATE_SCRIPT: |
+          local manifests = import './out/manifest.json';
+          
+          local grouped = std.foldl(
+            function(acc, path)
+              acc + {
+                [std.split(path, '/')[1]]+: [
+                  path,
+                ],
+              },
+            std.objectFields(manifests),
+            {}
+          );
+          
+          '{\n'
+          + std.join('\n', [
+            ('  "%s": [\n' % cluster)
+            + std.join('\n', [
+              '    std.parseYaml(importstr "out/%s"),' % path
+              for path in grouped[cluster]
+            ])
+            + '\n  ],'
+            for cluster in std.objectFields(grouped)
+          ])
+          + '\n}'
+        TEST_SCRIPT: |
+          local resources = import './resources.jsonnet';
+          [
+            std.foldl(
+              function(acc, resource)
+                acc +
+                assert
+                  std.filter(
+                    function(r)
+                      r.kind == resource.kind
+                      && r.apiVersion == resource.apiVersion
+                      && r.metadata.name == resource.metadata.name
+                      && std.get(r.metadata, 'namespace') == std.get(resource.metadata, 'namespace')
+                    , acc
+                  ) == []
+                  : 'Duplicate resource found: \n'
+                    + std.manifestJson({
+                      kind: resource.kind,
+                      apiVersion: resource.apiVersion,
+                      metadata: {
+                        name: resource.metadata.name,
+                        [if 'namespace' in resource.metadata then 'namespace']: std.get(resource.metadata, 'namespace'),
+                      },
+                    });
+                [resource],
+              resources[cluster],
+              []
+            )
+            for cluster in std.objectFields(resources)
+          ]
+      name: "Check for duplicate resources in cluster"
+      run: |
+        jrsonnet -S -e $GENERATE_SCRIPT > resources.jsonnet
+        jrsonnet $TEST_SCRIPT
     - id: "changed"
       name: "Check if manifests changed"
       uses: "tj-actions/verify-changed-files@v20"
