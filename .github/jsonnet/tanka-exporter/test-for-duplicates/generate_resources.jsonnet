@@ -1,4 +1,4 @@
-local manifests = import 'manifests.json';
+local manifests = import 'manifest.json';
 
 local grouped = std.foldl(
   function(acc, path)

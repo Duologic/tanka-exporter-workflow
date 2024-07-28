@@ -124,7 +124,7 @@ runs:
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
     - env:
         GENERATE_SCRIPT: |
-          local manifests = import 'manifests.json';
+          local manifests = import 'manifest.json';
           
           local grouped = std.foldl(
             function(acc, path)
