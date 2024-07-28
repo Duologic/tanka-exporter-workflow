@@ -115,7 +115,6 @@ runs:
       if: "${{ steps.args.outputs.noop != 'true' }}"
       name: "Export manifests with Tanka"
       run: |
-        rm $EXPORT_DIR/manifest.json
         tk export \
         $EXPORT_DIR \
         $ARGS \

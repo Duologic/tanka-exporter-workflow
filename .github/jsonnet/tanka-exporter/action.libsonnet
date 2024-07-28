@@ -143,7 +143,6 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(
     |||
-      rm $EXPORT_DIR/manifest.json
       tk export \
       $EXPORT_DIR \
       $ARGS \
