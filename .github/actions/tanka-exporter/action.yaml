@@ -123,9 +123,8 @@ runs:
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
     - env:
-        EXPORT_DIR: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/"
         GENERATE_SCRIPT: |
-          local manifests = import './out/manifest.json';
+          local manifests = import 'manifests.json';
           
           local grouped = std.foldl(
             function(acc, path)
@@ -142,7 +141,7 @@ runs:
           + std.join('\n', [
             ('  "%s": [\n' % cluster)
             + std.join('\n', [
-              '    std.parseYaml(importstr "out/%s"),' % path
+              '    std.parseYaml(importstr "%s"),' % path
               for path in grouped[cluster]
             ])
             + '\n  ],'
@@ -184,7 +183,9 @@ runs:
       run: |
         jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
         jrsonnet "$TEST_SCRIPT"
+        rm resources.jsonnet
       shell: "bash"
+      working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"
     - id: "changed"
       name: "Check if manifests changed"
       uses: "tj-actions/verify-changed-files@v20"
