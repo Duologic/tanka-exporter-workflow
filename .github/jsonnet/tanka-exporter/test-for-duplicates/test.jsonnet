@@ -1,4 +1,4 @@
-local resources = import './resources.jsonnet';
+local resources = import 'resources.jsonnet';
 [
   std.foldl(
     function(acc, resource)
