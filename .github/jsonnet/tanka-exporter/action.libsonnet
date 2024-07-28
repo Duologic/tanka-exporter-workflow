@@ -166,6 +166,8 @@ ga.action.withName('Export Tanka environments')
   }),
 
   step.withName('Check for duplicate resources in cluster')
+  + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
+  + step.withShell('bash')
   + step.withRun(|||
     jrsonnet -S -e $GENERATE_SCRIPT > resources.jsonnet
     jrsonnet $TEST_SCRIPT
