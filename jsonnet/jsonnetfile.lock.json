@@ -8,7 +8,7 @@
           "subdir": "tanka-util"
         }
       },
-      "version": "1d877bb0651ef92176f651d0be473c06e372a8a0",
+      "version": "aa29d2993ea51fb7d25dcdc43f114ed2ea52cefe",
       "sum": "ShSIissXdvCy1izTCDZX6tY7qxCoepE5L+WJ52Hw7ZQ="
     },
     {
@@ -20,6 +20,16 @@
       },
       "version": "6ac6c69685b8c29c54515448eaca583da2d88150",
       "sum": "BrAL/k23jq+xy9oA7TWIhUx07dsA/QLm3g7ktCwe//U="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/fluxcd-libsonnet.git",
+          "subdir": "2.3.0"
+        }
+      },
+      "version": "000ed73dfc9966c780ae9b62eb97fc52f6a7f8e0",
+      "sum": "/7WCgrDymrCAdwktFijoumWuk2j0FgjWXCYtPCPAOZg="
     },
     {
       "source": {
