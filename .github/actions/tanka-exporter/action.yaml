@@ -182,8 +182,8 @@ runs:
       if: "${{ steps.args.outputs.noop != 'true' }}"
       name: "Check for duplicate resources in cluster"
       run: |
-        jrsonnet -S -e $GENERATE_SCRIPT > resources.jsonnet
-        jrsonnet $TEST_SCRIPT
+        jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
+        jrsonnet "$TEST_SCRIPT"
       shell: "bash"
     - id: "changed"
       name: "Check if manifests changed"

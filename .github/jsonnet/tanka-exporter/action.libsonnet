@@ -169,8 +169,8 @@ ga.action.withName('Export Tanka environments')
   + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
   + step.withShell('bash')
   + step.withRun(|||
-    jrsonnet -S -e $GENERATE_SCRIPT > resources.jsonnet
-    jrsonnet $TEST_SCRIPT
+    jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
+    jrsonnet "$TEST_SCRIPT"
   |||)
   + step.withEnv({
     GENERATE_SCRIPT: importstr './test-for-duplicates/generate_resources.jsonnet',
