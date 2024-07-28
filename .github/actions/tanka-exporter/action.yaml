@@ -182,7 +182,7 @@ runs:
       name: "Check for duplicate resources in cluster"
       run: |
         jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
-        jrsonnet "$TEST_SCRIPT"
+        jrsonnet -e "$TEST_SCRIPT"
         rm resources.jsonnet
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"

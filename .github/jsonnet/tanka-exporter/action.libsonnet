@@ -171,7 +171,7 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(|||
     jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
-    jrsonnet "$TEST_SCRIPT"
+    jrsonnet -e "$TEST_SCRIPT"
     rm resources.jsonnet
   |||)
   + step.withEnv({
