@@ -170,6 +170,7 @@ ga.action.withName('Export Tanka environments')
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}')
   + step.withShell('bash')
   + step.withRun(|||
+    cat manifest.json
     jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
     jrsonnet -e "$TEST_SCRIPT"
     rm resources.jsonnet

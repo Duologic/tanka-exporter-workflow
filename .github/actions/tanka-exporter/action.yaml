@@ -181,6 +181,7 @@ runs:
       if: "${{ steps.args.outputs.noop != 'true' }}"
       name: "Check for duplicate resources in cluster"
       run: |
+        cat manifest.json
         jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
         jrsonnet -e "$TEST_SCRIPT"
         rm resources.jsonnet
