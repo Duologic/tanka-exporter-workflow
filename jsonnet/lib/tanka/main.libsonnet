@@ -3,6 +3,7 @@ local tk = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
 {
   environment: {
     new(app, namespace, resources): {
+      local this = self,
       app: app,
       namespace: namespace,
       resources: resources,
@@ -10,21 +11,21 @@ local tk = import 'github.com/grafana/jsonnet-libs/tanka-util/main.libsonnet';
       env(cluster):
         tk.environment.new(
           std.join('/', [
-            'environments',
-            self.app,
+            this.app,
             cluster.name,
-            self.namespace,
+            this.namespace,
           ]),
-          self.namespace,
+          this.namespace,
           cluster.apiServer
         )
         + tk.environment.withLabels({
-          cluster_name: cluster.name,
+          cluster: cluster.name,
+          app: this.app,
         })
-        + tk.environment.withData(self.resources),
+        + tk.environment.withData(this.resources),
 
       deploy(clusters): [
-        self.env(cluster)
+        this.env(cluster)
         for cluster in clusters
       ],
     },

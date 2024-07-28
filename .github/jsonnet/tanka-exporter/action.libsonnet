@@ -155,10 +155,9 @@ ga.action.withName('Export Tanka environments')
     EXPORT_DIR: '${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/',
     EXPORT_FORMAT: std.strReplace(
       |||
-        {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
-        {{ if .metadata.namespace }}{{ .metadata.namespace }}
-        {{ else }}_cluster
-        {{ end }}/
+        {{ env.metadata.labels.app }}/
+        {{ env.metadata.labels.cluster }}/
+        {{ env.spec.namespace }}/
         {{ .kind }}-{{ .metadata.name }}
       |||,
       '\n',

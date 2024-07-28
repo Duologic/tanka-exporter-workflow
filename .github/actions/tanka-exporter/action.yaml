@@ -110,7 +110,7 @@ runs:
     - env:
         ARGS: "${{ steps.args.outputs.args }}"
         EXPORT_DIR: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/"
-        EXPORT_FORMAT: "{{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}{{ if .metadata.namespace }}{{ .metadata.namespace }}{{ else }}_cluster{{ end }}/{{ .kind }}-{{ .metadata.name }}"
+        EXPORT_FORMAT: "{{ env.metadata.labels.app }}/{{ env.metadata.labels.cluster }}/{{ env.spec.namespace }}/{{ .kind }}-{{ .metadata.name }}"
       id: "export"
       if: "${{ steps.args.outputs.noop != 'true' }}"
       name: "Export manifests with Tanka"
