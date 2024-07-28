@@ -155,15 +155,29 @@ ga.action.withName('Export Tanka environments')
     EXPORT_DIR: '${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/',
     EXPORT_FORMAT: std.strReplace(
       |||
-        {{ if env.metadata.labels.cluster_name }}{{ env.metadata.labels.cluster_name }}/{{ end }}
-        {{ if .metadata.namespace }}{{ .metadata.namespace }}
-        {{ else }}_cluster
-        {{ end }}/
+        {{ env.metadata.labels.app }}/
+        {{ env.metadata.labels.cluster }}/
+        {{ env.spec.namespace }}/
         {{ .kind }}-{{ .metadata.name }}
       |||,
       '\n',
       ''
     ),
+  }),
+
+  step.withName('Check for duplicate resources in cluster')
+  + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
+  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}')
+  + step.withShell('bash')
+  + step.withRun(|||
+    cat manifest.json
+    jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
+    jrsonnet -e "$TEST_SCRIPT"
+    rm resources.jsonnet
+  |||)
+  + step.withEnv({
+    GENERATE_SCRIPT: importstr './test-for-duplicates/generate_resources.jsonnet',
+    TEST_SCRIPT: importstr './test-for-duplicates/test.jsonnet',
   }),
 
   step.withName('Check if manifests changed')

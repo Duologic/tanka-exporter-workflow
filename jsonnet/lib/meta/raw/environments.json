@@ -4,9 +4,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-eu-west-0"
+            "app": "namespaces",
+            "cluster": "dev-eu-west-0"
          },
-         "name": "environments/namespaces/dev-eu-west-0/default",
+         "name": "namespaces/dev-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -21,43 +22,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-eu-west-1"
+            "app": "namespaces",
+            "cluster": "dev-eu-west-1"
          },
-         "name": "environments/namespaces/dev-eu-west-1/default",
-         "namespace": "environments/namespaces/main.jsonnet"
-      },
-      "spec": {
-         "apiServer": "https://127.0.1.1:8443",
-         "expectVersions": { },
-         "namespace": "default",
-         "resourceDefaults": { }
-      }
-   },
-   {
-      "apiVersion": "tanka.dev/v1alpha1",
-      "kind": "Environment",
-      "metadata": {
-         "labels": {
-            "cluster_name": "dev-us-central-0"
-         },
-         "name": "environments/namespaces/dev-us-central-0/default",
-         "namespace": "environments/namespaces/main.jsonnet"
-      },
-      "spec": {
-         "apiServer": "https://127.0.0.1:8443",
-         "expectVersions": { },
-         "namespace": "default",
-         "resourceDefaults": { }
-      }
-   },
-   {
-      "apiVersion": "tanka.dev/v1alpha1",
-      "kind": "Environment",
-      "metadata": {
-         "labels": {
-            "cluster_name": "dev-us-central-1"
-         },
-         "name": "environments/namespaces/dev-us-central-1/default",
+         "name": "namespaces/dev-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -72,9 +40,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-eu-west-0"
+            "app": "namespaces",
+            "cluster": "dev-us-central-0"
          },
-         "name": "environments/namespaces/prod-eu-west-0/default",
+         "name": "namespaces/dev-us-central-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -89,9 +58,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-eu-west-1"
+            "app": "namespaces",
+            "cluster": "dev-us-central-1"
          },
-         "name": "environments/namespaces/prod-eu-west-1/default",
+         "name": "namespaces/dev-us-central-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -106,9 +76,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-us-central-0"
+            "app": "namespaces",
+            "cluster": "prod-eu-west-0"
          },
-         "name": "environments/namespaces/prod-us-central-0/default",
+         "name": "namespaces/prod-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -123,9 +94,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-us-central-1"
+            "app": "namespaces",
+            "cluster": "prod-eu-west-1"
          },
-         "name": "environments/namespaces/prod-us-central-1/default",
+         "name": "namespaces/prod-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -140,9 +112,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-eu-west-0"
+            "app": "namespaces",
+            "cluster": "prod-us-central-0"
          },
-         "name": "environments/namespaces/stag-eu-west-0/default",
+         "name": "namespaces/prod-us-central-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -157,9 +130,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-eu-west-1"
+            "app": "namespaces",
+            "cluster": "prod-us-central-1"
          },
-         "name": "environments/namespaces/stag-eu-west-1/default",
+         "name": "namespaces/prod-us-central-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -174,9 +148,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-us-central-0"
+            "app": "namespaces",
+            "cluster": "stag-eu-west-0"
          },
-         "name": "environments/namespaces/stag-us-central-0/default",
+         "name": "namespaces/stag-eu-west-0/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -191,9 +166,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-us-central-1"
+            "app": "namespaces",
+            "cluster": "stag-eu-west-1"
          },
-         "name": "environments/namespaces/stag-us-central-1/default",
+         "name": "namespaces/stag-eu-west-1/default",
          "namespace": "environments/namespaces/main.jsonnet"
       },
       "spec": {
@@ -208,9 +184,46 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-eu-west-0"
+            "app": "namespaces",
+            "cluster": "stag-us-central-0"
          },
-         "name": "environments/test/dev-eu-west-0/test",
+         "name": "namespaces/stag-us-central-0/default",
+         "namespace": "environments/namespaces/main.jsonnet"
+      },
+      "spec": {
+         "apiServer": "https://127.0.0.1:8443",
+         "expectVersions": { },
+         "namespace": "default",
+         "resourceDefaults": { }
+      }
+   },
+   {
+      "apiVersion": "tanka.dev/v1alpha1",
+      "kind": "Environment",
+      "metadata": {
+         "labels": {
+            "app": "namespaces",
+            "cluster": "stag-us-central-1"
+         },
+         "name": "namespaces/stag-us-central-1/default",
+         "namespace": "environments/namespaces/main.jsonnet"
+      },
+      "spec": {
+         "apiServer": "https://127.0.1.1:8443",
+         "expectVersions": { },
+         "namespace": "default",
+         "resourceDefaults": { }
+      }
+   },
+   {
+      "apiVersion": "tanka.dev/v1alpha1",
+      "kind": "Environment",
+      "metadata": {
+         "labels": {
+            "app": "test",
+            "cluster": "dev-eu-west-0"
+         },
+         "name": "test/dev-eu-west-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -225,9 +238,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-eu-west-1"
+            "app": "test",
+            "cluster": "dev-eu-west-1"
          },
-         "name": "environments/test/dev-eu-west-1/test",
+         "name": "test/dev-eu-west-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -242,9 +256,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-us-central-0"
+            "app": "test",
+            "cluster": "dev-us-central-0"
          },
-         "name": "environments/test/dev-us-central-0/test",
+         "name": "test/dev-us-central-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -259,9 +274,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "dev-us-central-1"
+            "app": "test",
+            "cluster": "dev-us-central-1"
          },
-         "name": "environments/test/dev-us-central-1/test",
+         "name": "test/dev-us-central-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -276,9 +292,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-eu-west-0"
+            "app": "test",
+            "cluster": "prod-eu-west-0"
          },
-         "name": "environments/test/prod-eu-west-0/test",
+         "name": "test/prod-eu-west-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -293,9 +310,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-eu-west-1"
+            "app": "test",
+            "cluster": "prod-eu-west-1"
          },
-         "name": "environments/test/prod-eu-west-1/test",
+         "name": "test/prod-eu-west-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -310,9 +328,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-us-central-0"
+            "app": "test",
+            "cluster": "prod-us-central-0"
          },
-         "name": "environments/test/prod-us-central-0/test",
+         "name": "test/prod-us-central-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -327,9 +346,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "prod-us-central-1"
+            "app": "test",
+            "cluster": "prod-us-central-1"
          },
-         "name": "environments/test/prod-us-central-1/test",
+         "name": "test/prod-us-central-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -344,9 +364,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-eu-west-0"
+            "app": "test",
+            "cluster": "stag-eu-west-0"
          },
-         "name": "environments/test/stag-eu-west-0/test",
+         "name": "test/stag-eu-west-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -361,9 +382,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-eu-west-1"
+            "app": "test",
+            "cluster": "stag-eu-west-1"
          },
-         "name": "environments/test/stag-eu-west-1/test",
+         "name": "test/stag-eu-west-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -378,9 +400,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-us-central-0"
+            "app": "test",
+            "cluster": "stag-us-central-0"
          },
-         "name": "environments/test/stag-us-central-0/test",
+         "name": "test/stag-us-central-0/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
@@ -395,9 +418,10 @@
       "kind": "Environment",
       "metadata": {
          "labels": {
-            "cluster_name": "stag-us-central-1"
+            "app": "test",
+            "cluster": "stag-us-central-1"
          },
-         "name": "environments/test/stag-us-central-1/test",
+         "name": "test/stag-us-central-1/test",
          "namespace": "environments/test/main.jsonnet"
       },
       "spec": {
