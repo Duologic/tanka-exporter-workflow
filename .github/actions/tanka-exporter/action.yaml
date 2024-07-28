@@ -166,7 +166,7 @@ runs:
       run: "git push -u -f origin pr-$PR"
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
-    - if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}"
+    - if: "${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}"
       name: "Push on main"
       run: "git push"
       shell: "bash"

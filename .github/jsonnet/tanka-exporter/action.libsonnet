@@ -220,7 +220,7 @@ ga.action.withName('Export Tanka environments')
   + step.withEnv({ PR: '${{ github.event.number }}' }),
 
   step.withName('Push on main')
-  + step.withIf("${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
+  + step.withIf("${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
   + step.withShell('bash')
   + step.withRun('git push'),
