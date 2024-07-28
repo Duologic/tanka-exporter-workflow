@@ -107,11 +107,7 @@ ga.action.withName('Export Tanka environments')
   + step.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
   + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
   + step.withShell('bash')
-  + step.withRun(|||
-    list=($MANIFESTS_DIR/*/)
-    echo ${list[@]}
-    rm -rf $MANIFESTS_DIR/*/
-  |||)
+  + step.withRun('rm -rf $MANIFESTS_DIR/*')
   + step.withEnv({
     MANIFESTS_DIR: '${{ inputs.target-directory }}',
   }),
