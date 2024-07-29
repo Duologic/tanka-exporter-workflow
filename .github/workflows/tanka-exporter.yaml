@@ -1,7 +1,25 @@
-# Generated with `make gen`
+# Generated, please do not edit.
+on:
+  pull_request:
+    paths:
+      - "jsonnet/**"
+      - ".github/**"
+  push:
+    branches:
+      - "main"
+    paths:
+      - "jsonnet/**"
+      - ".github/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: "write"
+  pull-requests: "write"
+
 concurrency:
   cancel-in-progress: "${{ github.ref != 'master' }}"
   group: "${{ github.workflow }}-${{ github.ref }}"
+
 jobs:
   export:
     runs-on: "ubuntu-latest"
@@ -23,6 +41,7 @@ jobs:
           tanka-root: "jsonnet"
           target-directory: "manifests"
           target-repository: "_manifests"
+
   validate:
     runs-on: "ubuntu-latest"
     steps:
@@ -45,18 +64,3 @@ jobs:
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
         name: "No files changed"
         run: "echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"
-"on":
-  pull_request:
-    paths:
-      - "jsonnet/**"
-      - ".github/**"
-  push:
-    branches:
-      - "main"
-    paths:
-      - "jsonnet/**"
-      - ".github/**"
-  workflow_dispatch: {}
-permissions:
-  contents: "write"
-  pull-requests: "write"

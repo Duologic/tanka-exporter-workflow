@@ -91,6 +91,20 @@ local step = ga.action.runs.composite.step;
       ]),
   },
 
+  local manifestField(obj, field, indent='') =
+    indent
+    + std.join(
+      '\n' + indent,
+      std.split(
+        std.manifestYamlDoc(
+          { [field]: obj[field] },
+          indent_array_in_object=true,
+          quote_keys=false
+        ),
+        '\n',
+      )
+    ),
+
   // This function manifests an action in an opinionated format.
   manifestAction(action):
     local fields = [
@@ -103,32 +117,39 @@ local step = ga.action.runs.composite.step;
     assert std.objectFields(action) == std.sort(fields) : 'Action contains fields that are not handled.';
     assert std.objectFields(action.runs) == std.sort(['using', 'steps']) : 'Action contains fields that are not handled.';
 
-    local manifestField(obj, field, indent='') =
-      indent
-      + std.join(
-        '\n' + indent,
-        std.split(
-          std.manifestYamlDoc(
-            { [field]: obj[field] },
-            indent_array_in_object=true,
-            quote_keys=false
-          ),
-          '\n',
-        )
-      );
-
-    std.join('\n', [
-      '# Generated, please do not edit.',
-      manifestField(action, 'name'),
-      manifestField(action, 'description'),
-      '',
+    '# Generated, please do not edit.\n'
+    + std.join('\n\n', [
+      std.join('\n', [
+        manifestField(action, 'name'),
+        manifestField(action, 'description'),
+      ]),
       manifestField(action, 'inputs'),
-      '',
       'runs:\n'
-      + std.join('\n', [
+      + std.join('\n\n', [
         manifestField(action.runs, 'using', '  '),
-        '',
         manifestField(action.runs, 'steps', '  '),
+      ]),
+    ]),
+
+  manifestWorkflow(workflow):
+    local fields = [
+      'on',
+      'permissions',
+      'concurrency',
+      'jobs',
+    ];
+
+    assert std.objectFields(workflow) == std.sort(fields) : 'Workflow contains fields that are not handled.';
+
+    '# Generated, please do not edit.\n'
+    + std.join('\n\n', [
+      'on:\n' + manifestField(workflow, 'on')[6:],
+      manifestField(workflow, 'permissions'),
+      manifestField(workflow, 'concurrency'),
+      'jobs:\n'
+      + std.join('\n\n', [
+        manifestField(workflow.jobs, job, '  ')
+        for job in std.objectFields(workflow.jobs)
       ]),
     ]),
 }
