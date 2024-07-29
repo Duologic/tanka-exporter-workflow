@@ -1,11 +1,15 @@
-# Generated with `make gen`
+# Generated, please do not edit.
+name: "Install jrsonnet"
 description: "Install jrsonnet from the GitHub releases"
+
 inputs:
   version:
     default: "0.5.0-pre96-test"
     description: "Version of jrsonnet to install."
-name: "Install jrsonnet"
+
 runs:
+  using: "composite"
+
   steps:
     - id: "restore"
       name: "Restore cache jrsonnet-linux-amd64-${{ inputs.version }}"
@@ -36,4 +40,3 @@ runs:
       with:
         key: "${{ steps.restore.outputs.cache-primary-key }}"
         path: "${{ github.workspace }}/bin"
-  using: "composite"

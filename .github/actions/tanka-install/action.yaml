@@ -1,11 +1,15 @@
-# Generated with `make gen`
+# Generated, please do not edit.
+name: "Install tk"
 description: "Install tk from the GitHub releases"
+
 inputs:
   version:
     default: "0.27.1"
     description: "Version of tk to install."
-name: "Install tk"
+
 runs:
+  using: "composite"
+
   steps:
     - id: "restore"
       name: "Restore cache tk-linux-amd64-${{ inputs.version }}"
@@ -36,4 +40,3 @@ runs:
       with:
         key: "${{ steps.restore.outputs.cache-primary-key }}"
         path: "${{ github.workspace }}/bin"
-  using: "composite"

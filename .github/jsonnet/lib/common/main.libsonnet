@@ -90,4 +90,45 @@ local step = ga.action.runs.composite.step;
         + step.withIf("steps.fetch_asset.outcome == 'success'"),
       ]),
   },
+
+  // This function manifests an action in an opinionated format.
+  manifestAction(action):
+    local fields = [
+      'name',
+      'description',
+      'inputs',
+      'runs',
+    ];
+
+    assert std.objectFields(action) == std.sort(fields) : 'Action contains fields that are not handled.';
+    assert std.objectFields(action.runs) == std.sort(['using', 'steps']) : 'Action contains fields that are not handled.';
+
+    local manifestField(obj, field, indent='') =
+      indent
+      + std.join(
+        '\n' + indent,
+        std.split(
+          std.manifestYamlDoc(
+            { [field]: obj[field] },
+            indent_array_in_object=true,
+            quote_keys=false
+          ),
+          '\n',
+        )
+      );
+
+    std.join('\n', [
+      '# Generated, please do not edit.',
+      manifestField(action, 'name'),
+      manifestField(action, 'description'),
+      '',
+      manifestField(action, 'inputs'),
+      '',
+      'runs:\n'
+      + std.join('\n', [
+        manifestField(action.runs, 'using', '  '),
+        '',
+        manifestField(action.runs, 'steps', '  '),
+      ]),
+    ]),
 }
