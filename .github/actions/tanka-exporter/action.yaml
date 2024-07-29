@@ -1,5 +1,7 @@
-# Generated with `make gen`
+# Generated, please do not edit.
+name: "Export Tanka environments"
 description: ""
+
 inputs:
   source-repository:
     description: "Path to source repository relative to the workspace"
@@ -13,8 +15,10 @@ inputs:
   target-repository:
     description: "Path to target repository relative to the workspace"
     required: true
-name: "Export Tanka environments"
+
 runs:
+  using: "composite"
+
   steps:
     - env:
         action_ref: "${{ github.action_ref }}"
@@ -252,4 +256,3 @@ runs:
           permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
           relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
         mode: "recreate"
-  using: "composite"
