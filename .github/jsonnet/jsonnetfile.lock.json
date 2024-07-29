@@ -8,8 +8,18 @@
           "subdir": ""
         }
       },
-      "version": "41e3482f6744711cd4017fd6b71992ec9bc23b83",
-      "sum": "xxUaX4BvPNAz6BCtxPJDkJRnQlYAYZAxNBuBoPY7jJk="
+      "version": "7cef5b36e3b747df51722af078eabbd36e462374",
+      "sum": "y+vKtLYOSg/hs6pfHZ73uyYP/3AKtabppTI51XdrQjo="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/docsonnet.git",
+          "subdir": "doc-util"
+        }
+      },
+      "version": "6ac6c69685b8c29c54515448eaca583da2d88150",
+      "sum": "BrAL/k23jq+xy9oA7TWIhUx07dsA/QLm3g7ktCwe//U="
     }
   ],
   "legacyImports": false

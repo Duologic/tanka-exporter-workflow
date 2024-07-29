@@ -8,7 +8,7 @@
           "subdir": ""
         }
       },
-      "version": "duologic/generate_action_lib"
+      "version": "manifest"
     }
   ],
   "legacyImports": true
