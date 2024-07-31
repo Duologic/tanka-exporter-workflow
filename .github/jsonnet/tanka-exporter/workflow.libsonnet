@@ -79,6 +79,14 @@ ga.workflow.on.push.withPaths(paths)
         CHANGED_FILES: '${{ needs.export.outputs.changed_files }}',
         REF: '${{ needs.export.outputs.commit_sha }}',
       }),
+      step.withUses('hermanbanken/kubeconform-action@v1')
+      + step.withWith({
+        options: [
+          '-output',
+          'json',
+          '${{ needs.export.outputs.changed_files }}',
+        ],
+      }),
     ]),
 
   validate:

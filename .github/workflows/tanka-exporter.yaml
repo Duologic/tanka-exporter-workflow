@@ -59,6 +59,12 @@ jobs:
           CHANGED_FILES: "${{ needs.export.outputs.changed_files }}"
           REF: "${{ needs.export.outputs.commit_sha }}"
         run: "echo \"$SHA\n\n$CHANGED_FILES\""
+      - uses: "hermanbanken/kubeconform-action@v1"
+        with:
+          options:
+            - "-output"
+            - "json"
+            - "${{ needs.export.outputs.changed_files }}"
 
   validate:
     runs-on: "ubuntu-latest"
