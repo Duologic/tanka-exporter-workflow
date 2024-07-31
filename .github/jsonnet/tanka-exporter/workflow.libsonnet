@@ -71,11 +71,14 @@ ga.workflow.on.push.withPaths(paths)
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
       + step.withWith({
-        ref: '${{ needs.export.outputs.commit_sah }}',
+        ref: '${{ needs.export.outputs.commit_sha }}',
       }),
       step.withRun('git log -1 --format=full'),
-      step.withRun('echo $CHANGED_FILES')
-      + step.withEnv({ CHANGED_FILES: '${{ needs.export.outputs.changed_files }}' }),
+      step.withRun('echo "$SHA\n\n$CHANGED_FILES"')
+      + step.withEnv({
+        CHANGED_FILES: '${{ needs.export.outputs.changed_files }}',
+        REF: '${{ needs.export.outputs.commit_sha }}',
+      }),
     ]),
 
   validate:

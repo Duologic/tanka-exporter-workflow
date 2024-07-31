@@ -53,11 +53,12 @@ jobs:
       - name: "Checkout source repository"
         uses: "actions/checkout@v4"
         with:
-          ref: "${{ needs.export.outputs.commit_sah }}"
+          ref: "${{ needs.export.outputs.commit_sha }}"
       - run: "git log -1 --format=full"
       - env:
           CHANGED_FILES: "${{ needs.export.outputs.changed_files }}"
-        run: "echo $CHANGED_FILES"
+          REF: "${{ needs.export.outputs.commit_sha }}"
+        run: "echo \"$SHA\n\n$CHANGED_FILES\""
 
   validate:
     runs-on: "ubuntu-latest"
