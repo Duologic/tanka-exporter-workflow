@@ -66,6 +66,7 @@ ga.workflow.on.push.withPaths(paths)
 
   read_outputs:
     ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withNeeds('export')
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')

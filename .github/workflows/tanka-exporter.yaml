@@ -47,6 +47,7 @@ jobs:
           target-repository: "_manifests"
 
   read_outputs:
+    needs: "export"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout source repository"
