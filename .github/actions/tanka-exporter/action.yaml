@@ -23,6 +23,9 @@ outputs:
   commit_sha:
     description: "Commit sha on the target repository"
     value: "${{ steps.commit.outputs.sha }}"
+  files_changed:
+    description: "Return 'true' when files have changed on the target repository"
+    value: "${{ steps.changed.outputs.files_changed }}"
 
 runs:
   using: "composite"

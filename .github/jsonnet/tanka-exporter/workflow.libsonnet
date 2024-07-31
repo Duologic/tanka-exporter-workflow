@@ -33,8 +33,10 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
   export:
-    ga.job.withRunsOn('ubuntu-latest')
+    ga.job.withName('Export Tanka manifests')
+    + ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withOutputs({
+      files_changed: '${{ steps.export.outputs.files_changed }}',
       changed_files: '${{ steps.export.outputs.changed_files }}',
       commit_sha: '${{ steps.export.outputs.commit_sha }}',
     })
@@ -64,20 +66,16 @@ ga.workflow.on.push.withPaths(paths)
       }),
     ]),
 
-  read_outputs:
-    ga.job.withRunsOn('ubuntu-latest')
+  kubeconform:
+    ga.job.withName('Run Kubeconform against changed files')
+    + ga.job.withIf("${{ needs.export.outputs.files_changed == 'true' }}")
+    + ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withNeeds('export')
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
       + step.withWith({
         ref: '${{ needs.export.outputs.commit_sha }}',
-      }),
-      step.withRun('git log -1 --format=full'),
-      step.withRun('echo "$SHA\n\n$CHANGED_FILES"')
-      + step.withEnv({
-        CHANGED_FILES: '${{ needs.export.outputs.changed_files }}',
-        REF: '${{ needs.export.outputs.commit_sha }}',
       }),
       step.withUses('hermanbanken/kubeconform-action@v1')
       + step.withWith({
@@ -91,7 +89,8 @@ ga.workflow.on.push.withPaths(paths)
     ]),
 
   validate:
-    ga.job.withRunsOn('ubuntu-latest')
+    ga.job.withName('Validate lib/meta/raw/environments.json')
+    + ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4'),

@@ -22,9 +22,11 @@ concurrency:
 
 jobs:
   export:
+    name: "Export Tanka manifests"
     outputs:
       changed_files: "${{ steps.export.outputs.changed_files }}"
       commit_sha: "${{ steps.export.outputs.commit_sha }}"
+      files_changed: "${{ steps.export.outputs.files_changed }}"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout source repository"
@@ -46,7 +48,9 @@ jobs:
           target-directory: "manifests"
           target-repository: "_manifests"
 
-  read_outputs:
+  kubeconform:
+    if: "${{ needs.export.outputs.files_changed == 'true' }}"
+    name: "Run Kubeconform against changed files"
     needs: "export"
     runs-on: "ubuntu-latest"
     steps:
@@ -54,16 +58,12 @@ jobs:
         uses: "actions/checkout@v4"
         with:
           ref: "${{ needs.export.outputs.commit_sha }}"
-      - run: "git log -1 --format=full"
-      - env:
-          CHANGED_FILES: "${{ needs.export.outputs.changed_files }}"
-          REF: "${{ needs.export.outputs.commit_sha }}"
-        run: "echo \"$SHA\n\n$CHANGED_FILES\""
       - uses: "hermanbanken/kubeconform-action@v1"
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
 
   validate:
+    name: "Validate lib/meta/raw/environments.json"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout source repository"
