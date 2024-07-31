@@ -10,6 +10,6 @@ local resources =
     'test-again',
     350,
     []
-  );
+  ) + { spec+: { template+: { spec+: { containers: 'invalid string' } } } };
 
 tk.environment.new(app, namespace, resources).deploy(clusters)
