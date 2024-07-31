@@ -8,7 +8,7 @@ local app = namespace;
 local resources =
   k.apps.v1.deployment.new(
     'test-again',
-    150,
+    350,
     []
   );
 
