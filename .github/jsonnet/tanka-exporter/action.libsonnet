@@ -72,7 +72,7 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(
     |||
-      MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
+      MODIFIED_FILES=$(jrsonnet -S -e "$SCRIPT")
       MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
       if [[ -n ${MODIFIED_ENVS} ]]; then
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
@@ -96,7 +96,7 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(
     |||
-      DELETED_ARGS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
+      DELETED_ARGS=$(jrsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
       echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
     |||
   )
@@ -185,13 +185,12 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(|||
     cat manifest.json
-    jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
-    jrsonnet -e "$TEST_SCRIPT"
+    jrsonnet -S "$SCRIPT_PATH"/generate_resources.jsonnet > resources.jsonnet
+    jrsonnet "$SCRIPT_PATH"/test_for_duplicate_resources.jsonnet
     rm resources.jsonnet
   |||)
   + step.withEnv({
-    GENERATE_SCRIPT: importstr './test-for-duplicates/generate_resources.jsonnet',
-    TEST_SCRIPT: importstr './test-for-duplicates/test.jsonnet',
+    SCRIPT_PATH: './%s/.github/actions/tanka-exporter/scripts' % actionCheckoutPath,
   }),
 
   step.withName('Check if manifests changed')

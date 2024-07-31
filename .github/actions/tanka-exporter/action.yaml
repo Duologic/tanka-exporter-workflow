@@ -72,7 +72,7 @@ runs:
       if: "${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}"
       name: "Find modified Tanka environments"
       run: |
-        MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
+        MODIFIED_FILES=$(jrsonnet -S -e "$SCRIPT")
         MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
         if [[ -n ${MODIFIED_ENVS} ]]; then
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
@@ -86,7 +86,7 @@ runs:
       if: "${{ steps.filter.outputs.deletedEnvs == 'true' }}"
       name: "Find deleted Tanka environments"
       run: |
-        DELETED_ARGS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
+        DELETED_ARGS=$(jrsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
         echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
       shell: "bash"
     - id: "bulk"
@@ -138,67 +138,13 @@ runs:
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
     - env:
-        GENERATE_SCRIPT: |
-          local manifests = import 'manifest.json';
-          
-          local grouped = std.foldl(
-            function(acc, path)
-              acc + {
-                [std.split(path, '/')[1]]+: [
-                  path,
-                ],
-              },
-            std.objectFields(manifests),
-            {}
-          );
-          
-          '{\n'
-          + std.join('\n', [
-            ('  "%s": [\n' % cluster)
-            + std.join('\n', [
-              '    std.parseYaml(importstr "%s"),' % path
-              for path in grouped[cluster]
-            ])
-            + '\n  ],'
-            for cluster in std.objectFields(grouped)
-          ])
-          + '\n}'
-        TEST_SCRIPT: |
-          local resources = import 'resources.jsonnet';
-          [
-            std.foldl(
-              function(acc, resource)
-                acc +
-                assert
-                  std.filter(
-                    function(r)
-                      r.kind == resource.kind
-                      && r.apiVersion == resource.apiVersion
-                      && r.metadata.name == resource.metadata.name
-                      && std.get(r.metadata, 'namespace') == std.get(resource.metadata, 'namespace')
-                    , acc
-                  ) == []
-                  : 'Duplicate resource found: \n'
-                    + std.manifestJson({
-                      kind: resource.kind,
-                      apiVersion: resource.apiVersion,
-                      metadata: {
-                        name: resource.metadata.name,
-                        [if 'namespace' in resource.metadata then 'namespace']: std.get(resource.metadata, 'namespace'),
-                      },
-                    });
-                [resource],
-              resources[cluster],
-              []
-            )
-            for cluster in std.objectFields(resources)
-          ]
+        SCRIPT_PATH: "./_tanka-exporter-checkout/.github/actions/tanka-exporter/scripts"
       if: "${{ steps.args.outputs.noop != 'true' }}"
       name: "Check for duplicate resources in cluster"
       run: |
         cat manifest.json
-        jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
-        jrsonnet -e "$TEST_SCRIPT"
+        jrsonnet -S "$SCRIPT_PATH"/generate_resources.jsonnet > resources.jsonnet
+        jrsonnet "$SCRIPT_PATH"/test_for_duplicate_resources.jsonnet
         rm resources.jsonnet
       shell: "bash"
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"
