@@ -16,6 +16,14 @@ inputs:
     description: "Path to target repository relative to the workspace"
     required: true
 
+outputs:
+  changed_files:
+    description: "List of files changed on the target repository"
+    value: "${{ steps.changed.outputs.changed_files }}"
+  commit_sha:
+    description: "Commit sha on the target repository"
+    value: "${{ steps.commit.outputs.sha }}"
+
 runs:
   using: "composite"
 

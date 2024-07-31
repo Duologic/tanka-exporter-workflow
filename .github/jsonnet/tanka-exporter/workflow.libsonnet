@@ -34,6 +34,10 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.withJobs({
   export:
     ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withOutputs({
+      changed_files: '${{ steps.export.outputs.changed_files }}',
+      commit_sha: '${{ steps.export.outputs.commit_sha }}',
+    })
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
@@ -50,6 +54,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       step.withName('Export Tanka manifests')
+      + step.withId('export')
       + step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
       + step.withWith({
         'source-repository': sourceRepo,
@@ -57,6 +62,19 @@ ga.workflow.on.push.withPaths(paths)
         'target-repository': manifestsRepo,
         'target-directory': manifestsDir,
       }),
+    ]),
+
+  read_outputs:
+    ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withSteps([
+      step.withName('Checkout source repository')
+      + step.withUses('actions/checkout@v4')
+      + step.withWith({
+        ref: '${{ jobs.export.outputs.commit_sah }}',
+      }),
+      step.withRun('git log -1 --format=full'),
+      step.withRun('echo $CHANGED_FILES')
+      + step.withEnv({ CHANGED_FILES: '${{ jobs.export.outputs.changed_files }}' }),
     ]),
 
   validate:

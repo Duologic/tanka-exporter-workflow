@@ -21,6 +21,16 @@ ga.action.withName('Export Tanka environments')
     ga.action.input.withDescription('Directory for the manifests in the target-repository')
     + ga.action.input.withRequired(),
 })
++ ga.action.withOutputs({
+  changed_files: {
+    description: 'List of files changed on the target repository',
+    value: '${{ steps.changed.outputs.changed_files }}',
+  },
+  commit_sha: {
+    description: 'Commit sha on the target repository',
+    value: '${{ steps.commit.outputs.sha }}',
+  },
+})
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
   common.actionRepo.checkoutStep(actionCheckoutPath),
