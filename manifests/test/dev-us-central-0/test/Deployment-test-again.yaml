@@ -4,7 +4,7 @@ metadata:
   name: test-again
   namespace: test
 spec:
-  replicas: 150
+  replicas: 350
   selector:
     matchLabels:
       name: test-again
@@ -13,4 +13,4 @@ spec:
       labels:
         name: test-again
     spec:
-      containers: []
+      containers: invalid string
