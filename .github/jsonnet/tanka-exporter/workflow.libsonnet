@@ -81,11 +81,12 @@ ga.workflow.on.push.withPaths(paths)
       }),
       step.withUses('hermanbanken/kubeconform-action@v1')
       + step.withWith({
-        options: [
-          '-output',
-          'json',
-          '${{ needs.export.outputs.changed_files }}',
-        ],
+        args:
+          std.join(' ', [
+            '-output',
+            'json',
+            '${{ needs.export.outputs.changed_files }}',
+          ]),
       }),
     ]),
 
