@@ -52,10 +52,10 @@ jobs:
       - name: "Checkout source repository"
         uses: "actions/checkout@v4"
         with:
-          ref: "${{ jobs.export.outputs.commit_sah }}"
+          ref: "${{ needs.export.outputs.commit_sah }}"
       - run: "git log -1 --format=full"
       - env:
-          CHANGED_FILES: "${{ jobs.export.outputs.changed_files }}"
+          CHANGED_FILES: "${{ needs.export.outputs.changed_files }}"
         run: "echo $CHANGED_FILES"
 
   validate:
