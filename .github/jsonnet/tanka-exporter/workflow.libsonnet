@@ -33,7 +33,13 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
   export:
-    ga.job.withRunsOn('ubuntu-latest')
+    ga.job.withName('Export Tanka manifests')
+    + ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withOutputs({
+      files_changed: '${{ steps.export.outputs.files_changed }}',
+      changed_files: '${{ steps.export.outputs.changed_files }}',
+      commit_sha: '${{ steps.export.outputs.commit_sha }}',
+    })
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
@@ -50,6 +56,7 @@ ga.workflow.on.push.withPaths(paths)
       }),
 
       step.withName('Export Tanka manifests')
+      + step.withId('export')
       + step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
       + step.withWith({
         'source-repository': sourceRepo,
@@ -59,8 +66,31 @@ ga.workflow.on.push.withPaths(paths)
       }),
     ]),
 
+  kubeconform:
+    ga.job.withName('Run Kubeconform against changed files')
+    + ga.job.withIf("${{ needs.export.outputs.files_changed == 'true' }}")
+    + ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withNeeds('export')
+    + ga.job.withSteps([
+      step.withName('Checkout source repository')
+      + step.withUses('actions/checkout@v4')
+      + step.withWith({
+        ref: '${{ needs.export.outputs.commit_sha }}',
+      }),
+      step.withUses('hermanbanken/kubeconform-action@v1')
+      + step.withWith({
+        args:
+          std.join(' ', [
+            '-output',
+            'json',
+            '${{ needs.export.outputs.changed_files }}',
+          ]),
+      }),
+    ]),
+
   validate:
-    ga.job.withRunsOn('ubuntu-latest')
+    ga.job.withName('Validate lib/meta/raw/environments.json')
+    + ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4'),
