@@ -8,8 +8,8 @@ local app = namespace;
 local resources =
   k.apps.v1.deployment.new(
     'test-again',
-    350,
+    150,
     []
-  ) + { spec+: { template+: { spec+: { containers: 'invalid string' } } } };
+  );
 
 tk.environment.new(app, namespace, resources).deploy(clusters)
