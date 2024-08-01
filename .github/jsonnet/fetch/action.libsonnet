@@ -8,7 +8,7 @@ common.fetchGitHubRelease.generateAction(
   file='${{ inputs.file }}',
   target='${{ inputs.target-file }}',
   path='${{ inputs.target-path }}',
-  cacheKey='${{ inputs.cache-key }}'
+  cacheKey='${{ github.workflow }}-${{ inputs.file }}-${{ inputs.version }}'
 )
 + ga.action.withName('Fetch GitHub Release asset with cache')
 + ga.action.withDescription(|||
@@ -36,9 +36,8 @@ common.fetchGitHubRelease.generateAction(
     + ga.action.input.withDescription('Target path for binary.')
     + ga.action.input.withDefault('${{ github.workspace }}/bin'),
 
-  'cache-key':
-    ga.action.input.withRequired()
-    + ga.action.input.withDescription('Target path for binary.')
-    + ga.action.input.withDefault('${{ inputs.file }}-${{ inputs.version }}'),
+  //'cache-key':
+  //  ga.action.input.withRequired()
+  //  + ga.action.input.withDescription('Target path for binary.')
+  //  + ga.action.input.withDefault('${{ inputs.file }}-${{ inputs.version }}'),
 })
-

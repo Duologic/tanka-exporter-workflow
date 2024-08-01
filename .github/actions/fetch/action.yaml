@@ -4,10 +4,6 @@ description: |
   This action fetches a GitHub Release asset and adds it to PATH.
 
 inputs:
-  cache-key:
-    default: "${{ inputs.file }}-${{ inputs.version }}"
-    description: "Target path for binary."
-    required: true
   file:
     description: "The name of the file to be downloaded."
     required: true
@@ -30,10 +26,10 @@ runs:
 
   steps:
     - id: "restore"
-      name: "Restore cache ${{ inputs.cache-key }}"
+      name: "Restore cache ${{ github.workflow }}-${{ inputs.file }}-${{ inputs.version }}"
       uses: "actions/cache/restore@v4"
       with:
-        key: "${{ inputs.cache-key }}"
+        key: "${{ github.workflow }}-${{ inputs.file }}-${{ inputs.version }}"
         path: "${{ inputs.target-path }}"
     - id: "fetch_asset"
       if: "steps.restore.outputs.cache-hit != 'true'"
@@ -53,7 +49,7 @@ runs:
       shell: "sh"
     - id: "save"
       if: "steps.fetch_asset.outcome == 'success'"
-      name: "Save to cache ${{ inputs.cache-key }}"
+      name: "Save to cache ${{ github.workflow }}-${{ inputs.file }}-${{ inputs.version }}"
       uses: "actions/cache/save@v4"
       with:
         key: "${{ steps.restore.outputs.cache-primary-key }}"
