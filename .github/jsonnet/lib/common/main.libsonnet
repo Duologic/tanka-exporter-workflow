@@ -77,28 +77,6 @@ local step = ga.action.runs.composite.step;
           file: file,
           'target-file': target,
         }),
-
-        //root.cache.restoreStep(path, cacheKey),
-
-        //step.withIf("steps.restore.outputs.cache-hit != 'true'")
-        //+ self.step(
-        //  repo,
-        //  'tags/v${{ inputs.version }}',
-        //  file,
-        //  path + '/' + target,
-        //),
-
-        //step.withName('Make %s executable' % target)
-        //+ step.withIf("steps.fetch_asset.outcome == 'success'")
-        //+ step.withShell('sh')
-        //+ step.withRun('chmod +x %s/%s' % [path, target]),
-
-        //step.withName('Add binary to path')
-        //+ step.withShell('sh')
-        //+ step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
-
-        //root.cache.saveStep(path, cacheKey)
-        //+ step.withIf("steps.fetch_asset.outcome == 'success'"),
       ]),
   },
 }
