@@ -44,7 +44,7 @@ ga.action.withName('Fetch GitHub Release binary')
   step.withIf("steps.restore.outputs.cache-hit != 'true'")
   + step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
-  + step.withUses('dsaltares/fetch-gh-release-asset@master')
+  + step.withUses('dsaltares/fetch-gh-release-asset@v1')
   + step.withWith({
     repo: repo,
     version: 'tags/v${{ inputs.version }}',
