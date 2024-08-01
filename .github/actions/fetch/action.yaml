@@ -1,7 +1,7 @@
 # Generated, please do not edit.
-name: "Fetch GitHub Release asset with cache"
+name: "Fetch GitHub Release binary"
 description: |
-  This action fetches a GitHub Release asset and adds it to PATH.
+  Generic action fetches a GitHub Release binary and add it to PATH. The binary will be cached to speed up next runs.
 
 inputs:
   file:
