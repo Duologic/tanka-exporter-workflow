@@ -117,4 +117,20 @@ ga.workflow.on.push.withPaths(paths)
       })
       + step.withRun("echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"),
     ]),
+
+  test_fetch:
+    ga.job.withRunsOn('ubuntu-latest')
+    + ga.job.withSteps([
+      step.withName('Checkout source repository')
+      + step.withUses('actions/checkout@v4'),
+
+      step.withName('Install Tanka')
+      + step.withUses('./.github/actions/fetch')
+      + step.withWith({
+        repo: 'grafana/tanka',
+        version: '0.27.1',
+        file: 'tk-linux-amd64',
+        target: 'tk',
+      }),
+    ]),
 })

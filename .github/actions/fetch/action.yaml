@@ -1,0 +1,60 @@
+# Generated, please do not edit.
+name: "Fetch GitHub Release asset with cache"
+description: |
+  This action fetches a GitHub Release asset and adds it to PATH.
+
+inputs:
+  cache-key:
+    default: "${{ inputs.file }}-${{ inputs.version }}"
+    description: "Target path for binary."
+    required: true
+  file:
+    description: "The name of the file to be downloaded."
+    required: true
+  repo:
+    description: "Repository to pull the release from"
+    required: true
+  target-file:
+    description: "Target filename for binary."
+    required: true
+  target-path:
+    default: "${{ github.workspace }}/bin"
+    description: "Target path for binary."
+    required: true
+  version:
+    description: "Version to install."
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - id: "restore"
+      name: "Restore cache ${{ inputs.cache-key }}"
+      uses: "actions/cache/restore@v4"
+      with:
+        key: "${{ inputs.cache-key }}"
+        path: "${{ inputs.target-path }}"
+    - id: "fetch_asset"
+      if: "steps.restore.outputs.cache-hit != 'true'"
+      name: "Fetch Github Release Asset"
+      uses: "dsaltares/fetch-gh-release-asset@master"
+      with:
+        file: "${{ inputs.file }}"
+        repo: "${{ inputs.repo }}"
+        target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+        version: "tags/v${{ inputs.version }}"
+    - if: "steps.fetch_asset.outcome == 'success'"
+      name: "Make ${{ inputs.target-file }} executable"
+      run: "chmod +x ${{ inputs.target-path }}/${{ inputs.target-file }}"
+      shell: "sh"
+    - name: "Add binary to path"
+      run: "echo \"${{ github.workspace }}/bin\" >> $GITHUB_PATH"
+      shell: "sh"
+    - id: "save"
+      if: "steps.fetch_asset.outcome == 'success'"
+      name: "Save to cache ${{ inputs.cache-key }}"
+      uses: "actions/cache/save@v4"
+      with:
+        key: "${{ steps.restore.outputs.cache-primary-key }}"
+        path: "${{ inputs.target-path }}"

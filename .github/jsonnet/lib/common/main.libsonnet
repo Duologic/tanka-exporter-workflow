@@ -53,9 +53,16 @@ local step = ga.action.runs.composite.step;
         target: target,
       }),
 
-    generateAction(repo, defaultVersion, file, target):
-      local path = '${{ github.workspace }}/bin';
-      local key = '%s-${{ inputs.version }}' % file;
+    generateAction(
+      repo,
+      defaultVersion,
+      file,
+      target,
+      path='${{ github.workspace }}/bin',
+      cacheKey='%s-${{ inputs.version }}' % file,
+    ):
+      //local path = '${{ github.workspace }}/bin';
+      //local cacheKey = '%s-${{ inputs.version }}' % file;
 
       ga.action.withName('Install %s' % target)
       + ga.action.withDescription('Install %s from the GitHub releases' % target)
@@ -67,7 +74,7 @@ local step = ga.action.runs.composite.step;
       })
       + ga.action.runs.composite.withUsing()
       + ga.action.runs.composite.withSteps([
-        root.cache.restoreStep(path, key),
+        root.cache.restoreStep(path, cacheKey),
 
         step.withIf("steps.restore.outputs.cache-hit != 'true'")
         + self.step(
@@ -86,7 +93,7 @@ local step = ga.action.runs.composite.step;
         + step.withShell('sh')
         + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
 
-        root.cache.saveStep(path, key)
+        root.cache.saveStep(path, cacheKey)
         + step.withIf("steps.fetch_asset.outcome == 'success'"),
       ]),
   },

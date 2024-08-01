@@ -62,6 +62,19 @@ jobs:
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
 
+  test_fetch:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout source repository"
+        uses: "actions/checkout@v4"
+      - name: "Install Tanka"
+        uses: "./.github/actions/fetch"
+        with:
+          file: "tk-linux-amd64"
+          repo: "grafana/tanka"
+          target: "tk"
+          version: "0.27.1"
+
   validate:
     name: "Validate lib/meta/raw/environments.json"
     runs-on: "ubuntu-latest"
