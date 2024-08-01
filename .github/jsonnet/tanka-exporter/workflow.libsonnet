@@ -130,7 +130,7 @@ ga.workflow.on.push.withPaths(paths)
         repo: 'grafana/tanka',
         version: '0.27.1',
         file: 'tk-linux-amd64',
-        target: 'tk',
+        'target-file': 'tk',
       }),
     ]),
 })

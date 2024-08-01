@@ -72,7 +72,7 @@ jobs:
         with:
           file: "tk-linux-amd64"
           repo: "grafana/tanka"
-          target: "tk"
+          target-file: "tk"
           version: "0.27.1"
 
   validate:
