@@ -75,7 +75,7 @@ local step = ga.action.runs.composite.step;
           repo: repo,
           version: '${{ inputs.version }}',
           file: file,
-          target: target,
+          'target-file': target,
         }),
 
         //root.cache.restoreStep(path, cacheKey),
