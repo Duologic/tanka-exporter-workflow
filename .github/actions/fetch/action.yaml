@@ -30,7 +30,7 @@ runs:
       uses: "actions/cache/restore@v4"
       with:
         key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
-        path: "${{ inputs.target-path }}"
+        path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
     - id: "fetch_asset"
       if: "steps.restore.outputs.cache-hit != 'true'"
       name: "Fetch Github Release Asset"
@@ -44,8 +44,10 @@ runs:
       name: "Make ${{ inputs.target-file }} executable"
       run: "chmod +x ${{ inputs.target-path }}/${{ inputs.target-file }}"
       shell: "sh"
-    - name: "Add binary to path"
-      run: "echo \"${{ github.workspace }}/bin\" >> $GITHUB_PATH"
+    - env:
+        TARGET_PATH: "${{ inputs.target-path }}"
+      name: "Add binary to path"
+      run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
       shell: "sh"
     - id: "save"
       if: "steps.fetch_asset.outcome == 'success'"
@@ -53,4 +55,4 @@ runs:
       uses: "actions/cache/save@v4"
       with:
         key: "${{ steps.restore.outputs.cache-primary-key }}"
-        path: "${{ inputs.target-path }}"
+        path: "${{ inputs.target-path }}/${{ inputs.target-file }}"

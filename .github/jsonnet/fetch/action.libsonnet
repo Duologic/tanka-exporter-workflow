@@ -8,6 +8,7 @@ local version = '${{ inputs.defaultVersion }}';
 local file = '${{ inputs.file }}';
 local target = '${{ inputs.target-file }}';
 local path = '${{ inputs.target-path }}';
+local full_path = path + '/' + target;
 local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
 
 ga.action.withName('Fetch GitHub Release binary')
@@ -39,7 +40,7 @@ ga.action.withName('Fetch GitHub Release binary')
 
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
-  common.cache.restoreStep(path, cacheKey),
+  common.cache.restoreStep(full_path, cacheKey),
 
   step.withIf("steps.restore.outputs.cache-hit != 'true'")
   + step.withName('Fetch Github Release Asset')
@@ -49,7 +50,7 @@ ga.action.withName('Fetch GitHub Release binary')
     repo: repo,
     version: 'tags/v${{ inputs.version }}',
     file: file,
-    target: path + '/' + target,
+    target: full_path,
   }),
 
   step.withName('Make %s executable' % target)
@@ -59,8 +60,11 @@ ga.action.withName('Fetch GitHub Release binary')
 
   step.withName('Add binary to path')
   + step.withShell('sh')
-  + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
+  + step.withRun('echo "$TARGET_PATH" >> $GITHUB_PATH')
+  + step.withEnv({
+    TARGET_PATH: path,
+  }),
 
-  common.cache.saveStep(path, cacheKey)
+  common.cache.saveStep(full_path, cacheKey)
   + step.withIf("steps.fetch_asset.outcome == 'success'"),
 ])
