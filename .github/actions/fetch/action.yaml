@@ -31,6 +31,7 @@ runs:
       with:
         key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
         path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+
     - id: "fetch_asset"
       if: "steps.restore.outputs.cache-hit != 'true'"
       name: "Fetch Github Release Asset"
@@ -40,17 +41,20 @@ runs:
         repo: "${{ inputs.repo }}"
         target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
         version: "tags/v${{ inputs.version }}"
+
     - env:
         FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
       if: "steps.fetch_asset.outcome == 'success'"
       name: "Make ${{ inputs.target-file }} executable"
       run: "chmod +x $FULL_PATH"
       shell: "sh"
+
     - env:
         TARGET_PATH: "${{ inputs.target-path }}"
       name: "Add binary to path"
       run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
       shell: "sh"
+
     - id: "save"
       if: "steps.fetch_asset.outcome == 'success'"
       name: "Save to cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"

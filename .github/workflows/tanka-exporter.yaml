@@ -34,11 +34,13 @@ jobs:
         with:
           path: "_source"
           ref: "${{ github.event.pull_request.head.sha }}"
+
       - name: "Checkout manifest repository"
         uses: "actions/checkout@v4"
         with:
           path: "_manifests"
           ref: "main"
+
       - id: "export"
         name: "Export Tanka manifests"
         uses: "./_source/.github/actions/tanka-exporter"
@@ -49,8 +51,8 @@ jobs:
           target-repository: "_manifests"
 
   kubeconform:
-    if: "${{ needs.export.outputs.files_changed == 'true' }}"
     name: "Run Kubeconform against changed files"
+    if: "${{ needs.export.outputs.files_changed == 'true' }}"
     needs: "export"
     runs-on: "ubuntu-latest"
     steps:
@@ -58,6 +60,7 @@ jobs:
         uses: "actions/checkout@v4"
         with:
           ref: "${{ needs.export.outputs.commit_sha }}"
+
       - uses: "hermanbanken/kubeconform-action@v1"
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
@@ -68,18 +71,23 @@ jobs:
     steps:
       - name: "Checkout source repository"
         uses: "actions/checkout@v4"
+
       - name: "Install Tanka"
         uses: "./.github/actions/tanka-install"
+
       - name: "Install jrsonnet"
         uses: "./.github/actions/jrsonnet-install"
+
       - name: "Run make lib/meta/raw/environments.json"
         run: "make lib/meta/raw/environments.json"
         working-directory: "jsonnet"
+
       - id: "changed"
         name: "Check if file changed"
         uses: "tj-actions/verify-changed-files@v20"
         with:
           files: "jsonnet"
+
       - env:
           CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
