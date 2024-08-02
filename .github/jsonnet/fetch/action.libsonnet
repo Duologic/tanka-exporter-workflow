@@ -3,12 +3,9 @@ local common = import 'common/main.libsonnet';
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 local step = ga.action.runs.composite.step;
 
-local repo = '${{ inputs.repo }}';
-local version = '${{ inputs.defaultVersion }}';
-local file = '${{ inputs.file }}';
-local target = '${{ inputs.target-file }}';
-local path = '${{ inputs.target-path }}';
-local full_path = path + '/' + target;
+local targetFile = '${{ inputs.target-file }}';
+local targetPath = '${{ inputs.target-path }}';
+local fullTargetPath = targetPath + '/' + targetFile;
 local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
 
 ga.action.withName('Fetch GitHub Release binary')
@@ -40,31 +37,34 @@ ga.action.withName('Fetch GitHub Release binary')
 
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
-  common.cache.restoreStep(full_path, cacheKey),
+  common.cache.restoreStep(fullTargetPath, cacheKey),
 
   step.withIf("steps.restore.outputs.cache-hit != 'true'")
   + step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
   + step.withUses('dsaltares/fetch-gh-release-asset@master')
   + step.withWith({
-    repo: repo,
+    repo: '${{ inputs.repo }}',
     version: 'tags/v${{ inputs.version }}',
-    file: file,
-    target: full_path,
+    file: '${{ inputs.file }}',
+    target: fullTargetPath,
   }),
 
-  step.withName('Make %s executable' % target)
+  step.withName('Make %s executable' % targetFile)
   + step.withIf("steps.fetch_asset.outcome == 'success'")
   + step.withShell('sh')
-  + step.withRun('chmod +x %s/%s' % [path, target]),
+  + step.withRun('chmod +x $FULL_PATH')
+  + step.withEnv({
+    FULL_PATH: fullTargetPath,
+  }),
 
   step.withName('Add binary to path')
   + step.withShell('sh')
   + step.withRun('echo "$TARGET_PATH" >> $GITHUB_PATH')
   + step.withEnv({
-    TARGET_PATH: path,
+    TARGET_PATH: targetPath,
   }),
 
-  common.cache.saveStep(full_path, cacheKey)
+  common.cache.saveStep(fullTargetPath, cacheKey)
   + step.withIf("steps.fetch_asset.outcome == 'success'"),
 ])

@@ -40,9 +40,11 @@ runs:
         repo: "${{ inputs.repo }}"
         target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
         version: "tags/v${{ inputs.version }}"
-    - if: "steps.fetch_asset.outcome == 'success'"
+    - env:
+        FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+      if: "steps.fetch_asset.outcome == 'success'"
       name: "Make ${{ inputs.target-file }} executable"
-      run: "chmod +x ${{ inputs.target-path }}/${{ inputs.target-file }}"
+      run: "chmod +x $FULL_PATH"
       shell: "sh"
     - env:
         TARGET_PATH: "${{ inputs.target-path }}"
