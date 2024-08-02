@@ -53,10 +53,12 @@ local step = ga.action.runs.composite.step;
         target: target,
       }),
 
-    generateAction(repo, defaultVersion, file, target):
-      local path = '${{ github.workspace }}/bin';
-      local key = '%s-${{ inputs.version }}' % file;
-
+    generateAction(
+      repo,
+      defaultVersion,
+      file,
+      target,
+    ):
       ga.action.withName('Install %s' % target)
       + ga.action.withDescription('Install %s from the GitHub releases' % target)
       + ga.action.withInputs({
@@ -67,27 +69,14 @@ local step = ga.action.runs.composite.step;
       })
       + ga.action.runs.composite.withUsing()
       + ga.action.runs.composite.withSteps([
-        root.cache.restoreStep(path, key),
-
-        step.withIf("steps.restore.outputs.cache-hit != 'true'")
-        + self.step(
-          repo,
-          'tags/v${{ inputs.version }}',
-          file,
-          path + '/' + target,
-        ),
-
-        step.withName('Make %s executable' % target)
-        + step.withIf("steps.fetch_asset.outcome == 'success'")
-        + step.withShell('sh')
-        + step.withRun('chmod +x %s/%s' % [path, target]),
-
-        step.withName('Add binary to path')
-        + step.withShell('sh')
-        + step.withRun('echo "${{ github.workspace }}/bin" >> $GITHUB_PATH'),
-
-        root.cache.saveStep(path, key)
-        + step.withIf("steps.fetch_asset.outcome == 'success'"),
+        root.actionRepo.checkoutStep('_wf'),
+        step.withUses('./_wf/.github/actions/fetch')
+        + step.withWith({
+          repo: repo,
+          version: '${{ inputs.version }}',
+          file: file,
+          'target-file': target,
+        }),
       ]),
   },
 }

@@ -5,6 +5,11 @@ local common = import 'common/main.libsonnet';
 
 local actionCheckoutPath = '_tanka-exporter-checkout';
 
+local targetRepoPath = '${{ github.workspace }}/${{ inputs.target-repository }}';
+local targetDirPath = targetRepoPath + '/${{ inputs.target-directory }}';
+local sourceRepoPath = '${{ github.workspace }}/${{ inputs.source-repository }}';
+local tankaRootPath = sourceRepoPath + '/${{ inputs.tanka-root }}';
+
 ga.action.withName('Export Tanka environments')
 + ga.action.withDescription('')
 + ga.action.withInputs({
@@ -22,18 +27,15 @@ ga.action.withName('Export Tanka environments')
     + ga.action.input.withRequired(),
 })
 + ga.action.withOutputs({
-  files_changed: {
-    description: "Return 'true' when files have changed on the target repository",
-    value: '${{ steps.changed.outputs.files_changed }}',
-  },
-  changed_files: {
-    description: 'List of files changed on the target repository',
-    value: '${{ steps.changed.outputs.changed_files }}',
-  },
-  commit_sha: {
-    description: 'Commit sha on the target repository',
-    value: '${{ steps.commit.outputs.sha }}',
-  },
+  files_changed:
+    ga.action.withDescription("Return 'true' when files have changed on the target repository")
+    + ga.action.output.withValue('${{ steps.changed.outputs.files_changed }}'),
+  changed_files:
+    ga.action.withDescription('List of files changed on the target repository')
+    + ga.action.output.withValue('${{ steps.changed.outputs.changed_files }}'),
+  commit_sha:
+    ga.action.withDescription('Commit sha on the target repository')
+    + ga.action.output.withValue('${{ steps.commit.outputs.sha }}'),
 })
 + ga.action.runs.composite.withUsing()
 + ga.action.runs.composite.withSteps([
@@ -68,11 +70,11 @@ ga.action.withName('Export Tanka environments')
   step.withName('Find modified Tanka environments')
   + step.withId('modified')
   + step.withIf("${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}')
+  + step.withWorkingDirectory(tankaRootPath)
   + step.withShell('bash')
   + step.withRun(
     |||
-      MODIFIED_FILES=$(jsonnet -S -e "$SCRIPT")
+      MODIFIED_FILES=$(jrsonnet -S -e "$SCRIPT")
       MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
       if [[ -n ${MODIFIED_ENVS} ]]; then
           ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
@@ -96,7 +98,7 @@ ga.action.withName('Export Tanka environments')
   + step.withShell('bash')
   + step.withRun(
     |||
-      DELETED_ARGS=$(jsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
+      DELETED_ARGS=$(jrsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
       echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
     |||
   )
@@ -119,7 +121,7 @@ ga.action.withName('Export Tanka environments')
 
   step.withName('Clear out manifests for bulk export')
   + step.withIf("${{ steps.bulk.outputs.bulk == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withWorkingDirectory(targetRepoPath)
   + step.withShell('bash')
   + step.withRun('rm -rf $MANIFESTS_DIR/*')
   + step.withEnv({
@@ -153,7 +155,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Export manifests with Tanka')
   + step.withId('export')
   + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}')
+  + step.withWorkingDirectory(tankaRootPath)
   + step.withShell('bash')
   + step.withRun(
     |||
@@ -166,32 +168,27 @@ ga.action.withName('Export Tanka environments')
   )
   + step.withEnv({
     ARGS: '${{ steps.args.outputs.args }}',
-    EXPORT_DIR: '${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}/',
-    EXPORT_FORMAT: std.strReplace(
-      |||
-        {{ env.metadata.labels.app }}/
-        {{ env.metadata.labels.cluster }}/
-        {{ env.spec.namespace }}/
-        {{ .kind }}-{{ .metadata.name }}
-      |||,
-      '\n',
-      ''
-    ),
+    EXPORT_DIR: targetDirPath,
+    EXPORT_FORMAT: std.join('/', [
+      '{{ env.metadata.labels.app }}',
+      '{{ env.metadata.labels.cluster }}',
+      '{{ env.spec.namespace }}',
+      '{{ .kind }}-{{ .metadata.name }}',
+    ]),
   }),
 
   step.withName('Check for duplicate resources in cluster')
   + step.withIf("${{ steps.args.outputs.noop != 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}')
+  + step.withWorkingDirectory(targetDirPath)
   + step.withShell('bash')
   + step.withRun(|||
     cat manifest.json
-    jrsonnet -S -e "$GENERATE_SCRIPT" > resources.jsonnet
-    jrsonnet -e "$TEST_SCRIPT"
+    jrsonnet -S "$SCRIPT_PATH"/generate_resources.jsonnet > resources.jsonnet
+    jrsonnet "$SCRIPT_PATH"/test_for_duplicate_resources.jsonnet
     rm resources.jsonnet
   |||)
   + step.withEnv({
-    GENERATE_SCRIPT: importstr './test-for-duplicates/generate_resources.jsonnet',
-    TEST_SCRIPT: importstr './test-for-duplicates/test.jsonnet',
+    SCRIPT_PATH: './%s/.github/actions/tanka-exporter/scripts' % actionCheckoutPath,
   }),
 
   step.withName('Check if manifests changed')
@@ -203,7 +200,7 @@ ga.action.withName('Export Tanka environments')
 
   step.withName('Check out branch for pull_request commit')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withWorkingDirectory(targetRepoPath)
   + step.withShell('bash')
   + step.withRun('git checkout -b pr-$PR')
   + step.withEnv({ PR: '${{ github.event.number }}' }),
@@ -211,7 +208,7 @@ ga.action.withName('Export Tanka environments')
   step.withName('Make a commit to the manifests repository')
   + step.withId('commit')
   + step.withIf("${{ steps.changed.outputs.files_changed == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withWorkingDirectory(targetRepoPath)
   + step.withShell('bash')
   + step.withRun(
     |||
@@ -224,7 +221,7 @@ ga.action.withName('Export Tanka environments')
   )
   + step.withEnv({
     MANIFESTS_DIR: '${{ inputs.target-directory }}',
-    SOURCE_REPO: '${{ github.workspace }}/${{ inputs.source-repository }}',
+    SOURCE_REPO: sourceRepoPath,
     GIT_AUTHOR_NAME: '${{ github.actor }}',
     GIT_AUTHOR_EMAIL: '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com',
     GIT_COMMITTER_NAME: 'github-actions[bot]',
@@ -242,14 +239,14 @@ ga.action.withName('Export Tanka environments')
 
   step.withName('Force push on pull_request')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withWorkingDirectory(targetRepoPath)
   + step.withShell('bash')
   + step.withRun('git push -u -f origin pr-$PR')
   + step.withEnv({ PR: '${{ github.event.number }}' }),
 
   step.withName('Push on main')
   + step.withIf("${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}")
-  + step.withWorkingDirectory('${{ github.workspace }}/${{ inputs.target-repository }}')
+  + step.withWorkingDirectory(targetRepoPath)
   + step.withShell('bash')
   + step.withRun('git push'),
 
