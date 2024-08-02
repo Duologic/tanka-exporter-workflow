@@ -2,19 +2,19 @@
 on:
   pull_request:
     paths:
-      - "jsonnet/**"
+      - jsonnet/**
       - ".github/**"
   push:
     branches:
-      - "main"
+      - main
     paths:
-      - "jsonnet/**"
+      - jsonnet/**
       - ".github/**"
   workflow_dispatch: {}
 
 permissions:
-  contents: "write"
-  pull-requests: "write"
+  contents: write
+  pull-requests: write
 
 concurrency:
   cancel-in-progress: "${{ github.ref != 'master' }}"
@@ -22,74 +22,74 @@ concurrency:
 
 jobs:
   export:
-    name: "Export Tanka manifests"
+    name: Export Tanka manifests
     outputs:
       changed_files: "${{ steps.export.outputs.changed_files }}"
       commit_sha: "${{ steps.export.outputs.commit_sha }}"
       files_changed: "${{ steps.export.outputs.files_changed }}"
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
     steps:
-      - name: "Checkout source repository"
-        uses: "actions/checkout@v4"
+      - name: Checkout source repository
+        uses: actions/checkout@v4
         with:
-          path: "_source"
+          path: _source
           ref: "${{ github.event.pull_request.head.sha }}"
 
-      - name: "Checkout manifest repository"
-        uses: "actions/checkout@v4"
+      - name: Checkout manifest repository
+        uses: actions/checkout@v4
         with:
-          path: "_manifests"
-          ref: "main"
+          path: _manifests
+          ref: main
 
-      - id: "export"
-        name: "Export Tanka manifests"
+      - id: export
+        name: Export Tanka manifests
         uses: "./_source/.github/actions/tanka-exporter"
         with:
-          source-repository: "_source"
-          tanka-root: "jsonnet"
-          target-directory: "manifests"
-          target-repository: "_manifests"
+          source-repository: _source
+          tanka-root: jsonnet
+          target-directory: manifests
+          target-repository: _manifests
 
   kubeconform:
-    name: "Run Kubeconform against changed files"
+    name: Run Kubeconform against changed files
     if: "${{ needs.export.outputs.files_changed == 'true' }}"
-    needs: "export"
-    runs-on: "ubuntu-latest"
+    needs: export
+    runs-on: ubuntu-latest
     steps:
-      - name: "Checkout source repository"
-        uses: "actions/checkout@v4"
+      - name: Checkout source repository
+        uses: actions/checkout@v4
         with:
           ref: "${{ needs.export.outputs.commit_sha }}"
 
-      - uses: "hermanbanken/kubeconform-action@v1"
+      - uses: hermanbanken/kubeconform-action@v1
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
 
   validate:
-    name: "Validate lib/meta/raw/environments.json"
-    runs-on: "ubuntu-latest"
+    name: Validate lib/meta/raw/environments.json
+    runs-on: ubuntu-latest
     steps:
-      - name: "Checkout source repository"
-        uses: "actions/checkout@v4"
+      - name: Checkout source repository
+        uses: actions/checkout@v4
 
-      - name: "Install Tanka"
+      - name: Install Tanka
         uses: "./.github/actions/tanka-install"
 
-      - name: "Install jrsonnet"
+      - name: Install jrsonnet
         uses: "./.github/actions/jrsonnet-install"
 
-      - name: "Run make lib/meta/raw/environments.json"
-        run: "make lib/meta/raw/environments.json"
-        working-directory: "jsonnet"
+      - name: Run make lib/meta/raw/environments.json
+        run: make lib/meta/raw/environments.json
+        working-directory: jsonnet
 
-      - id: "changed"
-        name: "Check if file changed"
-        uses: "tj-actions/verify-changed-files@v20"
+      - id: changed
+        name: Check if file changed
+        uses: tj-actions/verify-changed-files@v20
         with:
-          files: "jsonnet"
+          files: jsonnet
 
       - env:
           CHANGED_FILES: "${{ steps.changed.outputs.changed_files }}"
         if: "${{ steps.changed.outputs.files_changed == 'true' }}"
-        name: "No files changed"
+        name: No files changed
         run: "echo 'Please run `make lib/meta/raw/environments.json`' && exit 1"

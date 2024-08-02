@@ -1,58 +1,58 @@
 # Generated, please do not edit.
-name: "Export Tanka environments"
+name: Export Tanka environments
 description: ""
 
 inputs:
   source-repository:
-    description: "Path to source repository relative to the workspace"
+    description: Path to source repository relative to the workspace
     required: true
   tanka-root:
-    description: "Tanka root relative to the source-repository"
+    description: Tanka root relative to the source-repository
     required: true
   target-directory:
-    description: "Directory for the manifests in the target-repository"
+    description: Directory for the manifests in the target-repository
     required: true
   target-repository:
-    description: "Path to target repository relative to the workspace"
+    description: Path to target repository relative to the workspace
     required: true
 
 outputs:
   changed_files:
-    description: "List of files changed on the target repository"
+    description: List of files changed on the target repository
     value: "${{ steps.changed.outputs.changed_files }}"
   commit_sha:
-    description: "Commit sha on the target repository"
+    description: Commit sha on the target repository
     value: "${{ steps.commit.outputs.sha }}"
   files_changed:
     description: "Return 'true' when files have changed on the target repository"
     value: "${{ steps.changed.outputs.files_changed }}"
 
 runs:
-  using: "composite"
+  using: composite
 
   steps:
     - env:
         action_ref: "${{ github.action_ref }}"
         action_repo: "${{ github.action_repository }}"
-      name: "Checkout"
-      uses: "actions/checkout@v4"
+      name: Checkout
+      uses: actions/checkout@v4
       with:
-        path: "_tanka-exporter-checkout"
+        path: _tanka-exporter-checkout
         ref: "${{ env.action_ref }}"
         repository: "${{ env.action_repo }}"
 
-    - name: "Install Tanka"
+    - name: Install Tanka
       uses: "./_tanka-exporter-checkout/.github/actions/tanka-install"
 
-    - name: "Install jrsonnet"
+    - name: Install jrsonnet
       uses: "./_tanka-exporter-checkout/.github/actions/jrsonnet-install"
 
-    - name: "Install Jsonnet"
-      uses: "kobtea/setup-jsonnet-action@v2"
+    - name: Install Jsonnet
+      uses: kobtea/setup-jsonnet-action@v2
 
-    - id: "filter"
-      name: "Find changed paths"
-      uses: "dorny/paths-filter@v3"
+    - id: filter
+      name: Find changed paths
+      uses: dorny/paths-filter@v3
       with:
         filters: |
           "addedModifiedJsonnet":
@@ -63,7 +63,7 @@ runs:
             - "deleted": "${{ inputs.tanka-root }}/**"
           "jsonnet":
             - "${{ inputs.tanka-root }}/**"
-        list-files: "json"
+        list-files: json
         working-directory: "${{ inputs.source-repository }}"
 
     - env:
@@ -73,9 +73,9 @@ runs:
             std.map(function(f) f[prefixLength:], ${{ steps.filter.outputs.addedModifiedJsonnet_files }})
             + std.map(function(f) 'deleted:'+f[prefixLength:], ${{ steps.filter.outputs.deletedJsonnet_files }})
           )
-      id: "modified"
+      id: modified
       if: "${{ steps.filter.outputs.addedModifiedJsonnet == 'true' }}"
-      name: "Find modified Tanka environments"
+      name: Find modified Tanka environments
       run: |
         MODIFIED_FILES=$(jrsonnet -S -e "$SCRIPT")
         MODIFIED_ENVS=$(tk tool importers $MODIFIED_FILES | tr '\n' ' ')
@@ -83,34 +83,34 @@ runs:
             ARGS="$MODIFIED_ENVS --merge-strategy=replace-envs"
             echo "args=$ARGS" >> $GITHUB_OUTPUT
         fi
-      shell: "bash"
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
 
     - env:
         DELETED_FILES: "${{ steps.filter.outputs.deletedEnvs_files }}"
-      id: "deleted"
+      id: deleted
       if: "${{ steps.filter.outputs.deletedEnvs == 'true' }}"
-      name: "Find deleted Tanka environments"
+      name: Find deleted Tanka environments
       run: |
         DELETED_ARGS=$(jrsonnet -S -e "std.join('--merge-deleted-envs ', $DELETED_FILES)")
         echo "args=$DELETED_ARGS" >> $GITHUB_OUTPUT
-      shell: "bash"
+      shell: bash
 
-    - id: "bulk"
+    - id: bulk
       if: "${{ github.event_name == 'workflow_dispatch' }}"
-      name: "Find out whether to do a bulk export"
+      name: Find out whether to do a bulk export
       run: |
         echo "bulk=true" >> $GITHUB_OUTPUT
         ARGS="environments/ --merge-strategy=fail-on-conflicts"
         echo "args=$ARGS" >> $GITHUB_OUTPUT
-      shell: "bash"
+      shell: bash
 
     - env:
         MANIFESTS_DIR: "${{ inputs.target-directory }}"
       if: "${{ steps.bulk.outputs.bulk == 'true' }}"
-      name: "Clear out manifests for bulk export"
-      run: "rm -rf $MANIFESTS_DIR/*"
-      shell: "bash"
+      name: Clear out manifests for bulk export
+      run: rm -rf $MANIFESTS_DIR/*
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
 
     - env:
@@ -118,8 +118,8 @@ runs:
         BULK_ARGS: "${{ steps.bulk.outputs.args }}"
         DELETED_ARGS: "${{ steps.deleted.outputs.args }}"
         MODIFIED_ARGS: "${{ steps.modified.outputs.args }}"
-      id: "args"
-      name: "Compose Tanka arguments"
+      id: args
+      name: Compose Tanka arguments
       run: |
         if [[ $BULK = 'true' ]]; then
             ARGS="$BULK_ARGS"
@@ -130,48 +130,48 @@ runs:
         else
             echo "noop=true" >> $GITHUB_OUTPUT
         fi
-      shell: "bash"
+      shell: bash
 
     - env:
         ARGS: "${{ steps.args.outputs.args }}"
         EXPORT_DIR: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"
         EXPORT_FORMAT: "{{ env.metadata.labels.app }}/{{ env.metadata.labels.cluster }}/{{ env.spec.namespace }}/{{ .kind }}-{{ .metadata.name }}"
-      id: "export"
+      id: export
       if: "${{ steps.args.outputs.noop != 'true' }}"
-      name: "Export manifests with Tanka"
+      name: Export manifests with Tanka
       run: |
         tk export \
         $EXPORT_DIR \
         $ARGS \
         --recursive \
         --format "$EXPORT_FORMAT"
-      shell: "bash"
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.source-repository }}/${{ inputs.tanka-root }}"
 
     - env:
         SCRIPT_PATH: "./_tanka-exporter-checkout/.github/actions/tanka-exporter/scripts"
       if: "${{ steps.args.outputs.noop != 'true' }}"
-      name: "Check for duplicate resources in cluster"
+      name: Check for duplicate resources in cluster
       run: |
         cat manifest.json
         jrsonnet -S "$SCRIPT_PATH"/generate_resources.jsonnet > resources.jsonnet
         jrsonnet "$SCRIPT_PATH"/test_for_duplicate_resources.jsonnet
         rm resources.jsonnet
-      shell: "bash"
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"
 
-    - id: "changed"
-      name: "Check if manifests changed"
-      uses: "tj-actions/verify-changed-files@v20"
+    - id: changed
+      name: Check if manifests changed
+      uses: tj-actions/verify-changed-files@v20
       with:
         path: "${{ inputs.target-repository }}"
 
     - env:
         PR: "${{ github.event.number }}"
       if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}"
-      name: "Check out branch for pull_request commit"
-      run: "git checkout -b pr-$PR"
-      shell: "bash"
+      name: Check out branch for pull_request commit
+      run: git checkout -b pr-$PR
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
 
     - env:
@@ -188,46 +188,46 @@ runs:
           - Branch: ${{ github.base_ref }}
           - Build link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         SOURCE_REPO: "${{ github.workspace }}/${{ inputs.source-repository }}"
-      id: "commit"
+      id: commit
       if: "${{ steps.changed.outputs.files_changed == 'true' }}"
-      name: "Make a commit to the manifests repository"
+      name: Make a commit to the manifests repository
       run: |
         git add $MANIFESTS_DIR
         git commit -m "$(git -C $SOURCE_REPO show -s --format=%B)$MESSAGE"
         git log -1 --format=fuller
         git config --global push.autoSetupRemote true
         echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-      shell: "bash"
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
 
     - env:
         PR: "${{ github.event.number }}"
       if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}"
-      name: "Force push on pull_request"
-      run: "git push -u -f origin pr-$PR"
-      shell: "bash"
+      name: Force push on pull_request
+      run: git push -u -f origin pr-$PR
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
 
     - if: "${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && steps.changed.outputs.files_changed == 'true' }}"
-      name: "Push on main"
-      run: "git push"
-      shell: "bash"
+      name: Push on main
+      run: git push
+      shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}"
 
     - if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}"
-      name: "Make no-op comment"
-      uses: "thollander/actions-comment-pull-request@v2"
+      name: Make no-op comment
+      uses: thollander/actions-comment-pull-request@v2
       with:
         comment_tag: "${{ github.workflow }}-difflinks"
-        message: "No changes"
-        mode: "recreate"
+        message: No changes
+        mode: recreate
 
     - if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}"
-      name: "Make changes comment"
-      uses: "thollander/actions-comment-pull-request@v2"
+      name: Make changes comment
+      uses: thollander/actions-comment-pull-request@v2
       with:
         comment_tag: "${{ github.workflow }}-difflinks"
         message: |
           permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
           relative: ${{ github.server_url }}/${{ github.repository }}/compare/main...pr-${{ github.event.number }}
-        mode: "recreate"
+        mode: recreate

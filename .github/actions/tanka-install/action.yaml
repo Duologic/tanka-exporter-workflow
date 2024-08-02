@@ -1,29 +1,29 @@
 # Generated, please do not edit.
-name: "Install tk"
-description: "Install tk from the GitHub releases"
+name: Install tk
+description: Install tk from the GitHub releases
 
 inputs:
   version:
-    default: "0.27.1"
-    description: "Version of tk to install."
+    default: 0.27.1
+    description: Version of tk to install.
 
 runs:
-  using: "composite"
+  using: composite
 
   steps:
     - env:
         action_ref: "${{ github.action_ref }}"
         action_repo: "${{ github.action_repository }}"
-      name: "Checkout"
-      uses: "actions/checkout@v4"
+      name: Checkout
+      uses: actions/checkout@v4
       with:
-        path: "_wf"
+        path: _wf
         ref: "${{ env.action_ref }}"
         repository: "${{ env.action_repo }}"
 
     - uses: "./_wf/.github/actions/fetch"
       with:
-        file: "tk-linux-amd64"
-        repo: "grafana/tanka"
-        target-file: "tk"
+        file: tk-linux-amd64
+        repo: grafana/tanka
+        target-file: tk
         version: "${{ inputs.version }}"
