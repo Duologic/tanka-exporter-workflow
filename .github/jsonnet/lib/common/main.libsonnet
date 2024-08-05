@@ -78,5 +78,28 @@ local step = ga.action.runs.composite.step;
           'target-file': target,
         }),
       ]),
+
+    generateRawAction(
+      repo,
+      defaultVersion,
+      file,
+      target,
+    ):
+      (import '../../fetch/action.libsonnet')
+      + (
+        local targetFile = '${{ inputs.target-file }}';
+        local targetPath = '${{ inputs.target-path }}';
+        local fullTargetPath = targetPath + '/' + targetFile;
+        local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
+
+        ga.action.withName('Install %s' % target)
+        + ga.action.withDescription('Install %s from the GitHub releases' % target)
+        + ga.action.withInputsMixin({
+          repo+: ga.action.input.withDefault(repo),
+          version+: ga.action.input.withDefault(defaultVersion),
+          file+: ga.action.input.withDefault(file),
+          'target-file'+: ga.action.input.withDefault(target),
+        })
+      ),
   },
 }

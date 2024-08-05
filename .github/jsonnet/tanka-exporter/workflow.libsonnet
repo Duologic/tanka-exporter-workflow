@@ -66,8 +66,8 @@ ga.workflow.on.push.withPaths(paths)
       }),
     ]),
 
-  kubeconform:
-    ga.job.withName('Run Kubeconform against changed files')
+  local lintJob(name) =
+    ga.job.withName('Lint changed files with %s' % name)
     + ga.job.withIf("${{ needs.export.outputs.files_changed == 'true' }}")
     + ga.job.withRunsOn('ubuntu-latest')
     + ga.job.withNeeds('export')
@@ -77,6 +77,10 @@ ga.workflow.on.push.withPaths(paths)
       + step.withWith({
         ref: '${{ needs.export.outputs.commit_sha }}',
       }),
+    ]),
+  kubeconform:
+    lintJob('Kubeconform')
+    + ga.job.withStepsMixin([
       step.withUses('hermanbanken/kubeconform-action@v1')
       + step.withWith({
         args:
