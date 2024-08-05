@@ -51,7 +51,7 @@ jobs:
           target-repository: _manifests
 
   kubeconform:
-    name: Run Kubeconform against changed files
+    name: Lint changed files with Kubeconform
     if: "${{ needs.export.outputs.files_changed == 'true' }}"
     needs: export
     runs-on: ubuntu-latest

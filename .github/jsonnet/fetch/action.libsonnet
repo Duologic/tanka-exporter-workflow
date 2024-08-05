@@ -39,9 +39,9 @@ ga.action.withName('Fetch GitHub Release binary')
 + ga.action.runs.composite.withSteps([
   common.cache.restoreStep(fullTargetPath, cacheKey),
 
-  step.withIf("steps.restore.outputs.cache-hit != 'true'")
-  + step.withName('Fetch Github Release Asset')
+  step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
+  + step.withIf("steps.restore.outputs.cache-hit != 'true'")
   + step.withUses('dsaltares/fetch-gh-release-asset@master')
   + step.withWith({
     repo: '${{ inputs.repo }}',
@@ -51,6 +51,7 @@ ga.action.withName('Fetch GitHub Release binary')
   }),
 
   step.withName('Make %s executable' % targetFile)
+  + step.withId('make_executable')
   + step.withIf("steps.fetch_asset.outcome == 'success'")
   + step.withShell('sh')
   + step.withRun('chmod +x $FULL_PATH')
@@ -59,6 +60,7 @@ ga.action.withName('Fetch GitHub Release binary')
   }),
 
   step.withName('Add binary to path')
+  + step.withId('add_to_path')
   + step.withShell('sh')
   + step.withRun('echo "$TARGET_PATH" >> $GITHUB_PATH')
   + step.withEnv({

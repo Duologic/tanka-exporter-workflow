@@ -44,6 +44,7 @@ runs:
 
     - env:
         FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+      id: make_executable
       if: "steps.fetch_asset.outcome == 'success'"
       name: "Make ${{ inputs.target-file }} executable"
       run: chmod +x $FULL_PATH
@@ -51,6 +52,7 @@ runs:
 
     - env:
         TARGET_PATH: "${{ inputs.target-path }}"
+      id: add_to_path
       name: Add binary to path
       run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
       shell: sh
