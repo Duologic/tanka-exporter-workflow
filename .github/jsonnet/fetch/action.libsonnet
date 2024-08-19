@@ -39,7 +39,7 @@ gac.new(
 })
 
 + gac.runs.withSteps([
-  common.cache.restoreStep(fullTargetPath, cacheKey),
+  common.cache.plainCacheStep(fullTargetPath, cacheKey),
 
   step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
@@ -68,7 +68,4 @@ gac.new(
   + step.withEnv({
     TARGET_PATH: targetPath,
   }),
-
-  common.cache.saveStep(fullTargetPath, cacheKey)
-  + step.withIf("steps.fetch_asset.outcome == 'success'"),
 ])

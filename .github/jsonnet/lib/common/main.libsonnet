@@ -7,6 +7,15 @@ local step = gac.runs.step;
   local root = self,
 
   cache: {
+    plainCacheStep(path, key, idSuffix=''):
+      step.withName('Setup Cache for ' + key)
+      + step.withId('cache' + idSuffix)
+      + step.withUses('actions/cache@v4')
+      + step.withWith({
+        path: path,
+        key: key,
+      }),
+
     restoreStep(path, key, idSuffix=''):
       step.withName('Restore cache ' + key)
       + step.withId('restore' + idSuffix)

@@ -25,9 +25,9 @@ runs:
   using: composite
 
   steps:
-    - name: "Restore cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
-      id: restore
-      uses: actions/cache/restore@v4
+    - name: "Setup Cache for ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+      id: cache
+      uses: actions/cache@v4
       with:
         key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
         path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
@@ -56,11 +56,3 @@ runs:
       shell: sh
       env:
         TARGET_PATH: "${{ inputs.target-path }}"
-
-    - name: "Save to cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
-      id: save
-      if: "steps.fetch_asset.outcome == 'success'"
-      uses: actions/cache/save@v4
-      with:
-        key: "${{ steps.restore.outputs.cache-primary-key }}"
-        path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
