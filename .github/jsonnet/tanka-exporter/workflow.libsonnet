@@ -1,5 +1,6 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
-local step = ga.job.step;
+local job = ga.workflow.job;
+local step = job.step;
 
 local common = import 'common/main.libsonnet';
 
@@ -23,7 +24,8 @@ local paths = [
   '.github/**',
 ];
 
-ga.workflow.on.push.withPaths(paths)
+ga.workflow.new('Export Tanka manifests')
++ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
 + ga.workflow.on.withWorkflowDispatch({})
@@ -33,14 +35,14 @@ ga.workflow.on.push.withPaths(paths)
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
 + ga.workflow.withJobs({
   export:
-    ga.job.withName('Export Tanka manifests')
-    + ga.job.withRunsOn('ubuntu-latest')
-    + ga.job.withOutputs({
+    job.withName('Export Tanka manifests')
+    + job.withRunsOn('ubuntu-latest')
+    + job.withOutputs({
       files_changed: '${{ steps.export.outputs.files_changed }}',
       changed_files: '${{ steps.export.outputs.changed_files }}',
       commit_sha: '${{ steps.export.outputs.commit_sha }}',
     })
-    + ga.job.withSteps([
+    + job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
       + step.withWith({
@@ -66,17 +68,21 @@ ga.workflow.on.push.withPaths(paths)
       }),
     ]),
 
-  kubeconform:
-    ga.job.withName('Run Kubeconform against changed files')
-    + ga.job.withIf("${{ needs.export.outputs.files_changed == 'true' }}")
-    + ga.job.withRunsOn('ubuntu-latest')
-    + ga.job.withNeeds('export')
-    + ga.job.withSteps([
+  local lintJob(name) =
+    job.withName('Lint changed files with %s' % name)
+    + job.withIf("${{ needs.export.outputs.files_changed == 'true' }}")
+    + job.withRunsOn('ubuntu-latest')
+    + job.withNeeds('export')
+    + job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4')
       + step.withWith({
         ref: '${{ needs.export.outputs.commit_sha }}',
       }),
+    ]),
+  kubeconform:
+    lintJob('Kubeconform')
+    + job.withStepsMixin([
       step.withUses('hermanbanken/kubeconform-action@v1')
       + step.withWith({
         args:
@@ -89,9 +95,9 @@ ga.workflow.on.push.withPaths(paths)
     ]),
 
   validate:
-    ga.job.withName('Validate lib/meta/raw/environments.json')
-    + ga.job.withRunsOn('ubuntu-latest')
-    + ga.job.withSteps([
+    job.withName('Validate lib/meta/raw/environments.json')
+    + job.withRunsOn('ubuntu-latest')
+    + job.withSteps([
       step.withName('Checkout source repository')
       + step.withUses('actions/checkout@v4'),
 

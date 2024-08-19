@@ -1,0 +1,19 @@
+
+  //step.withUses('kobtea/setup-jsonnet-action@v2'),
+  //step.withUses('azure/setup-helm@v4.2.0'),
+  //step.withUses('imranismail/setup-kustomize@v2'),
+  //step.withUses('Duologic/tanka-exporter-workflow/.github/actions/tanka-install@main'),
+
+  //step.withUses('moonrepo/setup-rust@v1'),
+  //step.withUses('baptiste0928/cargo-install@v3')
+  //+ step.withWith({
+  //  crate: 'jrsonnet',
+  //  git: 'https://github.com/CertainLach/jrsonnet.git',
+  //  commit: '609e5ef85d499fde8779b490f724daa97d4aa8e9',
+  //}),
+
+  //step.withUses('Duologic/tanka-exporter-workflow/.github/actions/jrsonnet-install@main')
+  //+ step.withWith({
+  //  version: '0.5.0-pre9-test',
+  //}),
+  //step.withRun('mkdir -p /usr/local/bin; cp $(which jrsonnet) /usr/local/bin'),

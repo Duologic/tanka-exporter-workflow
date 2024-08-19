@@ -11,15 +11,15 @@ runs:
   using: composite
 
   steps:
-    - env:
-        action_ref: "${{ github.action_ref }}"
-        action_repo: "${{ github.action_repository }}"
-      name: Checkout
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         path: _wf
         ref: "${{ env.action_ref }}"
         repository: "${{ env.action_repo }}"
+      env:
+        action_ref: "${{ github.action_ref }}"
+        action_repo: "${{ github.action_repository }}"
 
     - uses: "./_wf/.github/actions/fetch"
       with:

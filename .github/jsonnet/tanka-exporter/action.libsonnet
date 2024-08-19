@@ -1,5 +1,6 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
-local step = ga.action.runs.composite.step;
+local gac = ga.action.composite;
+local step = gac.runs.step;
 
 local common = import 'common/main.libsonnet';
 
@@ -10,35 +11,33 @@ local targetDirPath = targetRepoPath + '/${{ inputs.target-directory }}';
 local sourceRepoPath = '${{ github.workspace }}/${{ inputs.source-repository }}';
 local tankaRootPath = sourceRepoPath + '/${{ inputs.tanka-root }}';
 
-ga.action.withName('Export Tanka environments')
-+ ga.action.withDescription('')
-+ ga.action.withInputs({
+gac.new('Export Tanka environments')
++ gac.withInputs({
   'source-repository':
-    ga.action.input.withDescription('Path to source repository relative to the workspace')
-    + ga.action.input.withRequired(),
+    gac.input.withDescription('Path to source repository relative to the workspace')
+    + gac.input.withRequired(),
   'tanka-root':
-    ga.action.input.withDescription('Tanka root relative to the source-repository')
-    + ga.action.input.withRequired(),
+    gac.input.withDescription('Tanka root relative to the source-repository')
+    + gac.input.withRequired(),
   'target-repository':
-    ga.action.input.withDescription('Path to target repository relative to the workspace')
-    + ga.action.input.withRequired(),
+    gac.input.withDescription('Path to target repository relative to the workspace')
+    + gac.input.withRequired(),
   'target-directory':
-    ga.action.input.withDescription('Directory for the manifests in the target-repository')
-    + ga.action.input.withRequired(),
+    gac.input.withDescription('Directory for the manifests in the target-repository')
+    + gac.input.withRequired(),
 })
-+ ga.action.withOutputs({
++ gac.withOutputs({
   files_changed:
-    ga.action.withDescription("Return 'true' when files have changed on the target repository")
-    + ga.action.output.withValue('${{ steps.changed.outputs.files_changed }}'),
+    gac.withDescription("Return 'true' when files have changed on the target repository")
+    + gac.output.withValue('${{ steps.changed.outputs.files_changed }}'),
   changed_files:
-    ga.action.withDescription('List of files changed on the target repository')
-    + ga.action.output.withValue('${{ steps.changed.outputs.changed_files }}'),
+    gac.withDescription('List of files changed on the target repository')
+    + gac.output.withValue('${{ steps.changed.outputs.changed_files }}'),
   commit_sha:
-    ga.action.withDescription('Commit sha on the target repository')
-    + ga.action.output.withValue('${{ steps.commit.outputs.sha }}'),
+    gac.withDescription('Commit sha on the target repository')
+    + gac.output.withValue('${{ steps.commit.outputs.sha }}'),
 })
-+ ga.action.runs.composite.withUsing()
-+ ga.action.runs.composite.withSteps([
++ gac.runs.withSteps([
   common.actionRepo.checkoutStep(actionCheckoutPath),
 
   step.withName('Install Tanka')

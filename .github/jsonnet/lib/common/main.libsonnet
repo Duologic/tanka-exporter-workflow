@@ -1,6 +1,7 @@
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
-local step = ga.action.runs.composite.step;
+local gac = ga.action.composite;
+local step = gac.runs.step;
 
 {
   local root = self,
@@ -59,16 +60,18 @@ local step = ga.action.runs.composite.step;
       file,
       target,
     ):
-      ga.action.withName('Install %s' % target)
-      + ga.action.withDescription('Install %s from the GitHub releases' % target)
-      + ga.action.withInputs({
+      gac.new(
+        'Install %s' % target,
+        'Install %s from the GitHub releases' % target
+      )
+      + gac.withInputs({
         version: {
           description: 'Version of %s to install.' % target,
           default: defaultVersion,
         },
       })
-      + ga.action.runs.composite.withUsing()
-      + ga.action.runs.composite.withSteps([
+      + gac.runs.withUsing()
+      + gac.runs.withSteps([
         root.actionRepo.checkoutStep('_wf'),
         step.withUses('./_wf/.github/actions/fetch')
         + step.withWith({
@@ -78,5 +81,28 @@ local step = ga.action.runs.composite.step;
           'target-file': target,
         }),
       ]),
+
+    generateRawAction(
+      repo,
+      defaultVersion,
+      file,
+      target,
+    ):
+      (import '../../fetch/action.libsonnet')
+      + (
+        local targetFile = '${{ inputs.target-file }}';
+        local targetPath = '${{ inputs.target-path }}';
+        local fullTargetPath = targetPath + '/' + targetFile;
+        local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
+
+        gac.withName('Install %s' % target)
+        + gac.withDescription('Install %s from the GitHub releases' % target)
+        + gac.withInputsMixin({
+          repo+: gac.input.withDefault(repo),
+          version+: gac.input.withDefault(defaultVersion),
+          file+: gac.input.withDefault(file),
+          'target-file'+: gac.input.withDefault(target),
+        })
+      ),
   },
 }

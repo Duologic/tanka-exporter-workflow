@@ -3,27 +3,67 @@ name: Install tk
 description: Install tk from the GitHub releases
 
 inputs:
+  file:
+    default: tk-linux-amd64
+    description: The name of the file to be downloaded.
+    required: true
+  repo:
+    default: grafana/tanka
+    description: Repository to pull the release from
+    required: true
+  target-file:
+    default: tk
+    description: Target filename for binary.
+    required: true
+  target-path:
+    default: "${{ github.workspace }}/bin"
+    description: Target path for binary.
+    required: true
   version:
     default: 0.27.1
-    description: Version of tk to install.
+    description: Version to install.
+    required: true
 
 runs:
   using: composite
 
   steps:
-    - env:
-        action_ref: "${{ github.action_ref }}"
-        action_repo: "${{ github.action_repository }}"
-      name: Checkout
-      uses: actions/checkout@v4
+    - name: "Restore cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+      id: restore
+      uses: actions/cache/restore@v4
       with:
-        path: _wf
-        ref: "${{ env.action_ref }}"
-        repository: "${{ env.action_repo }}"
+        key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+        path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
 
-    - uses: "./_wf/.github/actions/fetch"
+    - name: Fetch Github Release Asset
+      id: fetch_asset
+      if: "steps.restore.outputs.cache-hit != 'true'"
+      uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: tk-linux-amd64
-        repo: grafana/tanka
-        target-file: tk
-        version: "${{ inputs.version }}"
+        file: "${{ inputs.file }}"
+        repo: "${{ inputs.repo }}"
+        target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+        version: "tags/v${{ inputs.version }}"
+
+    - name: "Make ${{ inputs.target-file }} executable"
+      id: make_executable
+      if: "steps.fetch_asset.outcome == 'success'"
+      run: chmod +x $FULL_PATH
+      shell: sh
+      env:
+        FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+
+    - name: Add binary to path
+      id: add_to_path
+      run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
+      shell: sh
+      env:
+        TARGET_PATH: "${{ inputs.target-path }}"
+
+    - name: "Save to cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+      id: save
+      if: "steps.fetch_asset.outcome == 'success'"
+      uses: actions/cache/save@v4
+      with:
+        key: "${{ steps.restore.outputs.cache-primary-key }}"
+        path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
