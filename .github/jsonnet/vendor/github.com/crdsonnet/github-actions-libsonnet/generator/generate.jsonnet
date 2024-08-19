@@ -5,6 +5,8 @@ local crdsonnet = import 'github.com/crdsonnet/crdsonnet/crdsonnet/main.libsonne
 local astRenderEngine = import 'github.com/crdsonnet/crdsonnet/crdsonnet/renderEngines/ast.libsonnet';
 local d = import 'github.com/jsonnet-libs/docsonnet/doc-util/main.libsonnet';
 
+local actionSchema = import 'github.com/SchemaStore/schemastore/src/schemas/json/github-action.json';
+
 local schema =
   (import 'github.com/SchemaStore/schemastore/src/schemas/json/github-workflow.json')
   + {
@@ -52,66 +54,205 @@ local schema =
   }
 ;
 
-local jobschema =
+local jobSchema =
   std.mergePatch(schema, { properties: null, required: null })
   + { '$ref': '#/definitions/normalJob' };
 
-local actionschema =
-  (import 'github.com/SchemaStore/schemastore/src/schemas/json/github-action.json')
+local actionCompositeSchema =
+  actionSchema
   + {
-    // rename refs for nicer output
-    definitions+: {
-      javascript: self['runs-javascript'],
-      composite: self['runs-composite'] + {
-        properties+: {
-          steps:: {},
-          local steps = super.steps,
-          step: steps,
-        },
-      },
-      docker: self['runs-docker'],
-    },
     properties+: {
-      runs: {
-        oneOf: [
-          {
-            '$ref': '#/definitions/javascript',
+      runs:
+        actionSchema.definitions['runs-composite']
+        + {
+          properties+: {
+            steps:: {},
+            local steps = super.steps,
+            step: steps,
           },
-          {
-            '$ref': '#/definitions/composite',
-          },
-          {
-            '$ref': '#/definitions/docker',
-          },
-        ],
-      },
+        },
+      outputs: actionSchema.definitions['outputs-composite'],
+    },
+  };
+local compositeOutputsSchema = actionSchema.definitions['outputs-composite'].patternProperties['^[_a-zA-Z][a-zA-Z0-9_-]*$'];
+
+local actionDockerSchema =
+  actionSchema
+  + {
+    properties+: {
+      runs: actionSchema.definitions['runs-docker'],
+      outputs: actionSchema.definitions.outputs,
     },
   };
 
-local inputsschema =
-  actionschema.properties.inputs.patternProperties['^[_a-zA-Z][a-zA-Z0-9_-]*$'];
-local outputsschema =
-  actionschema.definitions['outputs-composite'].patternProperties['^[_a-zA-Z][a-zA-Z0-9_-]*$'];
+local actionJavascriptSchema =
+  actionSchema
+  + {
+    properties+: {
+      runs: actionSchema.definitions['runs-javascript'],
+      outputs: actionSchema.definitions.outputs,
+    },
+  };
+
+
+local actionInputsSchema =
+  actionSchema.properties.inputs.patternProperties['^[_a-zA-Z][a-zA-Z0-9_-]*$'];
+local actionOutputsSchema =
+  actionSchema.definitions.outputs.patternProperties['^[_a-zA-Z][a-zA-Z0-9_-]*$'];
 
 local processor = crdsonnet.processor.new('ast');
 
-local asts = [
-  crdsonnet.schema.render('workflow', schema, processor),
-  crdsonnet.schema.render('job', jobschema, processor),
-  crdsonnet.schema.render('action', actionschema, processor),
+
+local subPackageDocstring(name, help='') =
+  a.object.new([
+    a.field.new(
+      a.string.new('#'),
+      a.literal.new(
+        std.manifestJsonEx(
+          d.package.newSub(name, help)
+          , '  ', ''
+        ),
+      ),
+    ),
+  ]);
+
+local mergeDocstring(name, obj, help='') =
+  autils.deepMergeObjects([
+    a.object.new([
+      a.field.new(
+        a.id.new(name),
+        subPackageDocstring(name, help)
+      ),
+    ]),
+    obj,
+  ]);
+
+local runsHelp(using) = actionSchema.definitions['runs-%s' % using].description;
+
+local forUsing(using, schema, inputsSchema, outputsSchema) =
   a.object.new([
     a.field.new(
       a.id.new('action'),
-      crdsonnet.schema.render('input', inputsschema, processor)
-    ),
-  ]),
-  a.object.new([
-    a.field.new(
-      a.id.new('action'),
-      crdsonnet.schema.render('output', outputsschema, processor)
-    ),
-  ]),
-];
+      mergeDocstring(
+        using,
+        autils.deepMergeObjects([
+          crdsonnet.schema.render(using, schema, processor),
+          a.object.new([
+            a.field.new(
+              a.id.new(using),
+              mergeDocstring(
+                'input',
+                crdsonnet.schema.render('input', inputsSchema, processor),
+              )
+            ),
+          ]),
+          a.object.new([
+            a.field.new(
+              a.id.new(using),
+              mergeDocstring(
+                'output',
+                crdsonnet.schema.render('output', outputsSchema, processor),
+              )
+            ),
+          ]),
+        ]),
+        runsHelp(using),
+      ),
+    )
+    + a.field.withAdditive(),
+  ]);
+
+local actionTree =
+  mergeDocstring(
+    'action',
+    autils.deepMergeObjects([
+      forUsing(
+        'composite',
+        actionCompositeSchema,
+        actionInputsSchema,
+        compositeOutputsSchema
+      ),
+      forUsing(
+        'docker',
+        actionDockerSchema,
+        actionInputsSchema,
+        actionOutputsSchema
+      ),
+      forUsing(
+        'javascript',
+        actionJavascriptSchema,
+        actionInputsSchema,
+        actionOutputsSchema
+      ),
+    ]),
+    |||
+      ```jsonnet
+      %(jsonnet)s
+      ```
+
+      This can be rendered into a Yaml file like so:
+
+      ```console
+      jsonnet -S action.jsonnet
+      ```
+
+      The output will look like this:
+      ```yaml
+      %(output)s
+      ```
+    ||| % {
+      jsonnet:
+        std.strReplace(
+          importstr '../examples/action.jsonnet',
+          '../main.libsonnet',
+          'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet',
+        ),
+      output:
+        std.rstripChars(importstr '../examples/action.output.yaml', '\n'),
+    }
+  );
+
+local workflowTree =
+  mergeDocstring(
+    'workflow',
+    autils.deepMergeObjects([
+      a.object.new([
+        a.field.new(
+          a.id.new('workflow'),
+          mergeDocstring(
+            'job',
+            crdsonnet.schema.render('job', jobSchema, processor),
+          ),
+        ),
+      ]),
+      crdsonnet.schema.render('workflow', schema, processor),
+    ]),
+    |||
+      ```jsonnet
+      %(jsonnet)s
+      ```
+
+      This can be rendered into a Yaml file like so:
+
+      ```console
+      jsonnet -S workflow.jsonnet
+      ```
+
+      The output will look like this:
+      ```yaml
+      %(output)s
+      ```
+    ||| % {
+      jsonnet:
+        std.strReplace(
+          importstr '../examples/workflow.jsonnet',
+          '../main.libsonnet',
+          'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet',
+        ),
+      output:
+        std.rstripChars(importstr '../examples/workflow.output.yaml', '\n'),
+    },
+  );
 
 local docstring =
   a.object.new([
@@ -122,16 +263,12 @@ local docstring =
           d.package.new(
             'github-actions-libsonnet',
             'github.com/crdsonnet/github-actions-libsonnet',
-            'Jsonnet library to create GitHub actions workflows.',
+            'Jsonnet library to create workflows and actions for GitHub Actions.',
             'main.libsonnet',
             'main',
           )
           + d.package.withUsageTemplate(
-            std.strReplace(
-              importstr '../example.jsonnet',
-              './main.libsonnet',
-              '%(import)s',
-            )
+            'local ga = import "%(import)s"'
           )
           , '  ', '\n'
         ),
@@ -140,10 +277,12 @@ local docstring =
   ]);
 
 '// DO NOT EDIT: generated by generator/generate.jsonnet\n'
-+ "{ workflow+: { '#': { help: '', name: 'workflow' } } }\n+ "
-+ "{ job+: { '#': { help: '', name: 'job' } } }\n+ "
-+ "{ action+: { '#': { help: '', name: 'action' } } }\n+ "
-+ "{ action+: { input+: { '#': { help: '', name: 'action' } } } }\n+ "
 + (
-  autils.deepMergeObjects([docstring] + asts)
+  autils.deepMergeObjects(
+    [
+      docstring,
+      actionTree,
+      workflowTree,
+    ]
+  )
 ).toString()

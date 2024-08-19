@@ -25,16 +25,16 @@ runs:
   using: composite
 
   steps:
-    - id: restore
-      name: "Restore cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+    - name: "Restore cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+      id: restore
       uses: actions/cache/restore@v4
       with:
         key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
         path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
 
-    - id: fetch_asset
+    - name: Fetch Github Release Asset
+      id: fetch_asset
       if: "steps.restore.outputs.cache-hit != 'true'"
-      name: Fetch Github Release Asset
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         file: "${{ inputs.file }}"
@@ -42,24 +42,24 @@ runs:
         target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
         version: "tags/v${{ inputs.version }}"
 
-    - env:
-        FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+    - name: "Make ${{ inputs.target-file }} executable"
       id: make_executable
       if: "steps.fetch_asset.outcome == 'success'"
-      name: "Make ${{ inputs.target-file }} executable"
       run: chmod +x $FULL_PATH
       shell: sh
+      env:
+        FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
 
-    - env:
-        TARGET_PATH: "${{ inputs.target-path }}"
+    - name: Add binary to path
       id: add_to_path
-      name: Add binary to path
       run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
       shell: sh
+      env:
+        TARGET_PATH: "${{ inputs.target-path }}"
 
-    - id: save
+    - name: "Save to cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+      id: save
       if: "steps.fetch_asset.outcome == 'success'"
-      name: "Save to cache ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
       uses: actions/cache/save@v4
       with:
         key: "${{ steps.restore.outputs.cache-primary-key }}"
