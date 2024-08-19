@@ -37,7 +37,7 @@ runs:
 
     - name: Fetch Github Release Asset
       id: fetch_asset
-      if: "steps.restore.outputs.cache-hit != 'true'"
+      if: "steps.cache.outputs.cache-hit != 'true'"
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         file: "${{ inputs.file }}"

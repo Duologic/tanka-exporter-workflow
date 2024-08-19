@@ -43,7 +43,7 @@ gac.new(
 
   step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
-  + step.withIf("steps.restore.outputs.cache-hit != 'true'")
+  + step.withIf("steps.cache.outputs.cache-hit != 'true'")
   + step.withUses('dsaltares/fetch-gh-release-asset@master')
   + step.withWith({
     repo: '${{ inputs.repo }}',
