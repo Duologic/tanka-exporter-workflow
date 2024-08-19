@@ -158,7 +158,7 @@ runs:
       shell: bash
       working-directory: "${{ github.workspace }}/${{ inputs.target-repository }}/${{ inputs.target-directory }}"
       env:
-        SCRIPT_PATH: "./_tanka-exporter-checkout/.github/actions/tanka-exporter/scripts"
+        SCRIPT_PATH: "./_tanka-exporter-checkout/.github/jsonnet/tanka-exporter/scripts"
 
     - name: Check if manifests changed
       id: changed

@@ -187,7 +187,7 @@ gac.new('Export Tanka environments')
     rm resources.jsonnet
   |||)
   + step.withEnv({
-    SCRIPT_PATH: './%s/.github/actions/tanka-exporter/scripts' % actionCheckoutPath,
+    SCRIPT_PATH: './%s/.github/jsonnet/tanka-exporter/scripts' % actionCheckoutPath,
   }),
 
   step.withName('Check if manifests changed')
