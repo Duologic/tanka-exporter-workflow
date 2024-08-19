@@ -39,11 +39,11 @@ gac.new(
 })
 
 + gac.runs.withSteps([
-  common.cache.restoreStep(fullTargetPath, cacheKey),
+  common.cache.plainCacheStep(fullTargetPath, cacheKey),
 
   step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
-  + step.withIf("steps.restore.outputs.cache-hit != 'true'")
+  + step.withIf("steps.cache.outputs.cache-hit != 'true'")
   + step.withUses('dsaltares/fetch-gh-release-asset@master')
   + step.withWith({
     repo: '${{ inputs.repo }}',
@@ -68,7 +68,4 @@ gac.new(
   + step.withEnv({
     TARGET_PATH: targetPath,
   }),
-
-  common.cache.saveStep(fullTargetPath, cacheKey)
-  + step.withIf("steps.fetch_asset.outcome == 'success'"),
 ])
