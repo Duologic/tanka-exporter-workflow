@@ -15,9 +15,11 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: write # give push permissions to GITHUB_TOKEN
+  pull-requests: write # give permission to comment on the pull request
 
+# limit concurrency
+# but only cancel when in PRs
 concurrency:
   cancel-in-progress: "${{ github.ref != 'master' }}"
   group: "${{ github.workflow }}-${{ github.ref }}"
