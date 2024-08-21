@@ -15,8 +15,8 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: write # allow git push
+  pull-requests: write # allow pr comments
 
 concurrency:
   cancel-in-progress: "${{ github.ref != 'master' }}"
@@ -32,13 +32,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           path: _source
-          ref: "${{ github.event.pull_request.head.sha }}"
+          ref: "${{ github.event.pull_request.head.sha }}" # needed to read the right commit message
 
       - name: Checkout manifest repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           path: _manifests
           ref: main
@@ -59,11 +59,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           ref: "${{ needs.export.outputs.commit_sha }}"
 
-      - uses: hermanbanken/kubeconform-action@v1
+      - name: Run linter
+        uses: hermanbanken/kubeconform-action@v1
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
 
@@ -72,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Install Tanka
         uses: "./.github/actions/tanka-install"

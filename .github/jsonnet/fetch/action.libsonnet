@@ -1,6 +1,7 @@
+local actions = import 'common/actions.libsonnet';
 local common = import 'common/main.libsonnet';
 
-local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
+local ga = import 'ga.libsonnet';
 local gac = ga.action.composite;
 local step = gac.runs.step;
 
@@ -10,6 +11,7 @@ local fullTargetPath = targetPath + '/' + targetFile;
 local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
 
 gac.new(
+  'fetch',
   'Fetch GitHub Release binary',
   |||
     Generic action fetches a GitHub Release binary and add it to PATH. The binary will be cached to speed up next runs.
@@ -44,7 +46,7 @@ gac.new(
   step.withName('Fetch Github Release Asset')
   + step.withId('fetch_asset')
   + step.withIf("steps.cache.outputs.cache-hit != 'true'")
-  + step.withUses('dsaltares/fetch-gh-release-asset@master')
+  + step.withUses(actions.fetchGhReleaseAsset.asUses())
   + step.withWith({
     repo: '${{ inputs.repo }}',
     version: 'tags/v${{ inputs.version }}',

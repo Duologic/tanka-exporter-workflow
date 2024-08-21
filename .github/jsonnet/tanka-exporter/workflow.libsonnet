@@ -1,7 +1,8 @@
-local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
+local ga = import 'ga.libsonnet';
 local job = ga.workflow.job;
 local step = job.step;
 
+local actions = import 'common/actions.libsonnet';
 local common = import 'common/main.libsonnet';
 
 /* TODO:
@@ -24,15 +25,25 @@ local paths = [
   '.github/**',
 ];
 
-ga.workflow.new('Export Tanka manifests')
+ga.workflow.new('tanka-exporter', 'Export Tanka manifests')
+
 + ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
 + ga.workflow.on.withWorkflowDispatch({})
+
 + ga.workflow.permissions.withPullRequests('write')  // allow pr comments
 + ga.workflow.permissions.withContents('write')  // allow git push
++ ga.workflow.addComment('pull-requests: write', 'allow pr comments')
++ ga.workflow.addComment('contents: write', 'allow git push')
+
 + ga.workflow.concurrency.withGroup('${{ github.workflow }}-${{ github.ref }}')  // only run this workflow once per ref
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
+
++ ga.workflow.addComment(
+  'ref: "${{ github.event.pull_request.head.sha }}"',
+  'needed to read the right commit message',
+)
 + ga.workflow.withJobs({
   export:
     job.withName('Export Tanka manifests')
@@ -44,14 +55,14 @@ ga.workflow.new('Export Tanka manifests')
     })
     + job.withSteps([
       step.withName('Checkout source repository')
-      + step.withUses('actions/checkout@v4')
+      + step.withUses(actions.checkout.asUses())
       + step.withWith({
-        ref: '${{ github.event.pull_request.head.sha }}',  // need to read the right commit message
+        ref: '${{ github.event.pull_request.head.sha }}',  // needed to read the right commit message
         path: sourceRepo,
       }),
 
       step.withName('Checkout manifest repository')
-      + step.withUses('actions/checkout@v4')
+      + step.withUses(actions.checkout.asUses())
       + step.withWith({
         ref: 'main',
         path: manifestsRepo,
@@ -59,7 +70,7 @@ ga.workflow.new('Export Tanka manifests')
 
       step.withName('Export Tanka manifests')
       + step.withId('export')
-      + step.withUses('./' + sourceRepo + '/.github/actions/tanka-exporter')
+      + step.withUses(actions.tankaExporter.asUses(sourceRepo))
       + step.withWith({
         'source-repository': sourceRepo,
         'tanka-root': jsonnetDir,
@@ -75,7 +86,7 @@ ga.workflow.new('Export Tanka manifests')
     + job.withNeeds('export')
     + job.withSteps([
       step.withName('Checkout source repository')
-      + step.withUses('actions/checkout@v4')
+      + step.withUses(actions.checkout.asUses())
       + step.withWith({
         ref: '${{ needs.export.outputs.commit_sha }}',
       }),
@@ -83,7 +94,8 @@ ga.workflow.new('Export Tanka manifests')
   kubeconform:
     lintJob('Kubeconform')
     + job.withStepsMixin([
-      step.withUses('hermanbanken/kubeconform-action@v1')
+      step.withName('Run linter')
+      + step.withUses(actions.kubeconform.asUses())
       + step.withWith({
         args:
           std.join(' ', [
@@ -99,13 +111,13 @@ ga.workflow.new('Export Tanka manifests')
     + job.withRunsOn('ubuntu-latest')
     + job.withSteps([
       step.withName('Checkout source repository')
-      + step.withUses('actions/checkout@v4'),
+      + step.withUses(actions.checkout.asUses()),
 
       step.withName('Install Tanka')
-      + step.withUses('./.github/actions/tanka-install'),
+      + step.withUses(actions.tankaInstall.asUses()),
 
       step.withName('Install jrsonnet')
-      + step.withUses('./.github/actions/jrsonnet-install'),
+      + step.withUses(actions.jrsonnetInstall.asUses()),
 
       step.withName('Run make lib/meta/raw/environments.json')
       + step.withRun('make lib/meta/raw/environments.json')
@@ -113,7 +125,7 @@ ga.workflow.new('Export Tanka manifests')
 
       step.withName('Check if file changed')
       + step.withId('changed')
-      + step.withUses('tj-actions/verify-changed-files@v20')
+      + step.withUses(actions.verifyChangedFiles.asUses())
       + step.withWith({ files: 'jsonnet' }),
 
       step.withName('No files changed')

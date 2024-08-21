@@ -1,7 +1,8 @@
-local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
-
+local ga = import 'ga.libsonnet';
 local gac = ga.action.composite;
 local step = gac.runs.step;
+
+local actions = import './actions.libsonnet';
 
 {
   local root = self,
@@ -10,7 +11,7 @@ local step = gac.runs.step;
     plainCacheStep(path, key, idSuffix=''):
       step.withName('Setup Cache for ' + key)
       + step.withId('cache' + idSuffix)
-      + step.withUses('actions/cache@v4')
+      + step.withUses(actions.cache.asUses())
       + step.withWith({
         path: path,
         key: key,
@@ -19,7 +20,7 @@ local step = gac.runs.step;
     restoreStep(path, key, idSuffix=''):
       step.withName('Restore cache ' + key)
       + step.withId('restore' + idSuffix)
-      + step.withUses('actions/cache/restore@v4')
+      + step.withUses(actions.cacheRestore.asUses())
       + step.withWith({
         path: path,
         key: key,
@@ -28,7 +29,7 @@ local step = gac.runs.step;
     saveStep(path, key, idSuffix=''):
       step.withName('Save to cache ' + key)
       + step.withId('save' + idSuffix)
-      + step.withUses('actions/cache/save@v4')
+      + step.withUses(actions.cacheSave.asUses())
       + step.withWith({
         path: path,
         key: '${{ steps.restore%s.outputs.cache-primary-key }}' % idSuffix,
@@ -43,7 +44,7 @@ local step = gac.runs.step;
         action_repo: '${{ github.action_repository }}',
         action_ref: '${{ github.action_ref }}',
       })
-      + step.withUses('actions/checkout@v4')
+      + step.withUses(actions.checkout.asUses())
       + step.withWith({
         repository: '${{ env.action_repo }}',
         ref: '${{ env.action_ref }}',
@@ -55,7 +56,7 @@ local step = gac.runs.step;
     step(repo, version, file, target):
       step.withName('Fetch Github Release Asset')
       + step.withId('fetch_asset')
-      + step.withUses('dsaltares/fetch-gh-release-asset@master')
+      + step.withUses(actions.fetchGhReleaseAsset.asUses())
       + step.withWith({
         repo: repo,
         version: version,
@@ -64,12 +65,14 @@ local step = gac.runs.step;
       }),
 
     generateAction(
+      slug,
       repo,
       defaultVersion,
       file,
       target,
     ):
       gac.new(
+        slug,
         'Install %s' % target,
         'Install %s from the GitHub releases' % target
       )
@@ -82,7 +85,7 @@ local step = gac.runs.step;
       + gac.runs.withUsing()
       + gac.runs.withSteps([
         root.actionRepo.checkoutStep('_wf'),
-        step.withUses('./_wf/.github/actions/fetch')
+        step.withUses(actions.fetch.asUses('_wf'))
         + step.withWith({
           repo: repo,
           version: '${{ inputs.version }}',
@@ -92,6 +95,7 @@ local step = gac.runs.step;
       ]),
 
     generateRawAction(
+      slug,
       repo,
       defaultVersion,
       file,
@@ -104,7 +108,8 @@ local step = gac.runs.step;
         local fullTargetPath = targetPath + '/' + targetFile;
         local cacheKey = '${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}';
 
-        gac.withName('Install %s' % target)
+        gac.withSlug(slug)
+        + gac.withName('Install %s' % target)
         + gac.withDescription('Install %s from the GitHub releases' % target)
         + gac.withInputsMixin({
           repo+: gac.input.withDefault(repo),
