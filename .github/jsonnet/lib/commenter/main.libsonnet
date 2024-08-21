@@ -8,8 +8,6 @@
     str: str,
     comments: [],
 
-    local lines = std.split(self.str, newlineChar),
-
     local applyComment(lines, comment) =
       std.map(
         function(line)
@@ -48,7 +46,7 @@
         std.foldl(
           applyComment,
           self.comments,
-          lines
+          std.split(self.str, newlineChar)
         );
 
       std.join(newlineChar, return),

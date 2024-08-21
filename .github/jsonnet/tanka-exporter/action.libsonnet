@@ -1,7 +1,8 @@
-local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
+local ga = import 'ga.libsonnet';
 local gac = ga.action.composite;
 local step = gac.runs.step;
 
+local actions = import 'common/actions.libsonnet';
 local common = import 'common/main.libsonnet';
 
 local actionCheckoutPath = '_tanka-exporter-checkout';
@@ -11,7 +12,7 @@ local targetDirPath = targetRepoPath + '/${{ inputs.target-directory }}';
 local sourceRepoPath = '${{ github.workspace }}/${{ inputs.source-repository }}';
 local tankaRootPath = sourceRepoPath + '/${{ inputs.tanka-root }}';
 
-gac.new('Export Tanka environments')
+gac.new('tanka-exporter', 'Export Tanka environments')
 + gac.withInputs({
   'source-repository':
     gac.input.withDescription('Path to source repository relative to the workspace')
@@ -41,17 +42,17 @@ gac.new('Export Tanka environments')
   common.actionRepo.checkoutStep(actionCheckoutPath),
 
   step.withName('Install Tanka')
-  + step.withUses('./%s/.github/actions/tanka-install' % actionCheckoutPath),
+  + step.withUses(actions.tankaInstall.asUses(actionCheckoutPath)),
 
   step.withName('Install jrsonnet')
-  + step.withUses('./%s/.github/actions/jrsonnet-install' % actionCheckoutPath),
+  + step.withUses(actions.jrsonnetInstall.asUses(actionCheckoutPath)),
 
   step.withName('Install Jsonnet')
-  + step.withUses('kobtea/setup-jsonnet-action@v2'),
+  + step.withUses(actions.setupJsonnet.asUses()),
 
   step.withName('Find changed paths')
   + step.withId('filter')
-  + step.withUses('dorny/paths-filter@v3')
+  + step.withUses(actions.pathsFilter.asUses())
   + step.withWith({
     'working-directory': '${{ inputs.source-repository }}',
     'list-files': 'json',
@@ -192,7 +193,7 @@ gac.new('Export Tanka environments')
 
   step.withName('Check if manifests changed')
   + step.withId('changed')
-  + step.withUses('tj-actions/verify-changed-files@v20')
+  + step.withUses(actions.verifyChangedFiles.asUses())
   + step.withWith({
     path: '${{ inputs.target-repository }}',
   }),
@@ -251,7 +252,7 @@ gac.new('Export Tanka environments')
 
   step.withName('Make no-op comment')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}")
-  + step.withUses('thollander/actions-comment-pull-request@v2')
+  + step.withUses(actions.commentPullRequest.asUses())
   + step.withWith({
     message: 'No changes',
     comment_tag: '${{ github.workflow }}-difflinks',
@@ -260,7 +261,7 @@ gac.new('Export Tanka environments')
 
   step.withName('Make changes comment')
   + step.withIf("${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}")
-  + step.withUses('thollander/actions-comment-pull-request@v2')
+  + step.withUses(actions.commentPullRequest.asUses())
   + step.withWith({
     message: |||
       permalink: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.pull_request.base.sha }}...${{ steps.commit.outputs.sha }}
