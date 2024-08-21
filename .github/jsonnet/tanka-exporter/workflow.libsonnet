@@ -26,16 +26,24 @@ local paths = [
 ];
 
 ga.workflow.new('tanka-exporter', 'Export Tanka manifests')
+
 + ga.workflow.on.push.withPaths(paths)
 + ga.workflow.on.push.withBranches(['main'])
 + ga.workflow.on.pull_request.withPaths(paths)
 + ga.workflow.on.withWorkflowDispatch({})
+
 + ga.workflow.permissions.withPullRequests('write')  // allow pr comments
-+ ga.workflow.addComment('pull-requests: write', 'allow pr comments')
 + ga.workflow.permissions.withContents('write')  // allow git push
++ ga.workflow.addComment('pull-requests: write', 'allow pr comments')
 + ga.workflow.addComment('contents: write', 'allow git push')
+
 + ga.workflow.concurrency.withGroup('${{ github.workflow }}-${{ github.ref }}')  // only run this workflow once per ref
 + ga.workflow.concurrency.withCancelInProgress("${{ github.ref != 'master' }}")  // replace concurrent runs in PRs
+
++ ga.workflow.addComment(
+  'ref: "${{ github.event.pull_request.head.sha }}"',
+  'needed to read the right commit message',
+)
 + ga.workflow.withJobs({
   export:
     job.withName('Export Tanka manifests')
@@ -49,7 +57,7 @@ ga.workflow.new('tanka-exporter', 'Export Tanka manifests')
       step.withName('Checkout source repository')
       + step.withUses(actions.checkout.asUses())
       + step.withWith({
-        ref: '${{ github.event.pull_request.head.sha }}',  // need to read the right commit message
+        ref: '${{ github.event.pull_request.head.sha }}',  // needed to read the right commit message
         path: sourceRepo,
       }),
 
