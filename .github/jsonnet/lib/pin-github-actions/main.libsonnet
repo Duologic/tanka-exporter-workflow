@@ -25,7 +25,7 @@
           + self.action[2:],
     },
 
-    fromFilenae(filename)::
+    fromFilename(filename)::
       self.new(
         filename[
           :std.length(filename) -
