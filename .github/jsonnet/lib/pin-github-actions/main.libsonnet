@@ -33,7 +33,7 @@
            then std.length('/action.yaml')
            else if std.endsWith(filename, '/action.yml')
            then std.length('/action.yml')
-           else ''
+           else error "Filename doesn't end with /action.yaml or /action.yml"
         ]
       ),
   },
