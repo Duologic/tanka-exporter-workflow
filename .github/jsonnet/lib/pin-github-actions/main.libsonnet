@@ -50,16 +50,8 @@
       local latest = findLatestVersion(repo);
       root.new(action, latest.sha)
       + {
-        local this = self,
-
         repo: repo,
         tag: latest.tag,
-
-        comment:: {
-          needle: 'uses: ' + this.asUses(),
-          text: this.tag,
-          type: 'line',
-        },
       },
   },
 }

@@ -3,7 +3,11 @@ local commenter = import 'github.com/Duologic/commenter-libsonnet/main.libsonnet
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 local commentsPinnedVersions = [
-  action.value.comment
+  commenter.comment.new(
+    'uses: ' + action.value.asUses(),
+    action.value.tag
+  )
+  + commenter.comment.onSameLine()
   for action in std.objectKeysValues(actions)
   if 'repo' in action.value
 ];
