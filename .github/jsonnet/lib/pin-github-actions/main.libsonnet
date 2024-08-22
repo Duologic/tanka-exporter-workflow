@@ -58,6 +58,7 @@
         comment:: {
           needle: 'uses: ' + this.asUses(),
           text: this.tag,
+          type: 'line',
         },
       },
   },

@@ -1,5 +1,5 @@
-local commenter = import 'commenter/main.libsonnet';
 local actions = import 'common/actions.libsonnet';
+local commenter = import 'github.com/Duologic/commenter-libsonnet/main.libsonnet';
 local ga = import 'github.com/crdsonnet/github-actions-libsonnet/main.libsonnet';
 
 local commentsPinnedVersions = [
@@ -22,9 +22,15 @@ ga
         manifest()::
           self.commenter.apply(),
       },
+
     addComment(needle, comment): {
       commenter+:
-        commenter.addComment(needle, comment),
+        commenter.addCommentOnSameLine(needle, comment),
+    },
+
+    addLongComment(needle, comment): {
+      commenter+:
+        commenter.addCommentBeforeLine(needle, comment),
     },
 
     withSlug(slug): {
@@ -52,7 +58,12 @@ ga
 
       addComment(needle, comment): {
         commenter+:
-          commenter.addComment(needle, comment),
+          commenter.addCommentOnSameLine(needle, comment),
+      },
+
+      addLongComment(needle, comment): {
+        commenter+:
+          commenter.addCommentBeforeLine(needle, comment),
       },
 
       withSlug(slug): {
