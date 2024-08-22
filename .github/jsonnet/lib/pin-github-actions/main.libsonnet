@@ -25,15 +25,15 @@
           + self.action[2:],
     },
 
-    fromFilename(filename)::
+    fromPath(path)::
       self.new(
-        filename[
-          :std.length(filename) -
-           if std.endsWith(filename, '/action.yaml')
+        path[
+          :std.length(path) -
+           if std.endsWith(path, '/action.yaml')
            then std.length('/action.yaml')
-           else if std.endsWith(filename, '/action.yml')
+           else if std.endsWith(path, '/action.yml')
            then std.length('/action.yml')
-           else error "Filename doesn't end with /action.yaml or /action.yml"
+           else error "Path doesn't end with /action.yaml or /action.yml"
         ]
       ),
   },
