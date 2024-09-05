@@ -44,10 +44,14 @@
         function(s)
           s.repo == repo,
         latestVersions
-      )[0],
+      ),
 
     new(action, repo=action):
-      local latest = findLatestVersion(repo);
+      local found = findLatestVersion(repo);
+      local latest =
+        if std.length(found) != 0
+        then found[0]
+        else { sha: 'TBD', tag: 'TBD' };
       root.new(action, latest.sha)
       + {
         local this = self,
