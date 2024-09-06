@@ -1,6 +1,6 @@
 local pinAction = import 'pin-github-actions/main.libsonnet';
 
-local latestVersions = import './latest_actions.json';
+local latestVersions = import './latest_actions_from_actions.json';
 
 local pinLatestAction = pinAction.latest(latestVersions);
 
@@ -40,22 +40,22 @@ local pinLatestAction = pinAction.latest(latestVersions);
 
 
   kubeconform:
-    pinAction.new('hermanbanken/kubeconform-action', 'v1'),
+    pinLatestAction.new('hermanbanken/kubeconform-action'),
 
   verifyChangedFiles:
-    pinAction.new('tj-actions/verify-changed-files', 'v20'),
+    pinLatestAction.new('tj-actions/verify-changed-files'),
 
   setupJsonnet:
-    pinAction.new('kobtea/setup-jsonnet-action', 'v2'),
+    pinLatestAction.new('kobtea/setup-jsonnet-action'),
 
   pathsFilter:
-    pinAction.new('dorny/paths-filter', 'v3'),
+    pinLatestAction.new('dorny/paths-filter'),
 
   commentPullRequest:
-    pinAction.new('thollander/actions-comment-pull-request', 'v2'),
+    pinLatestAction.new('thollander/actions-comment-pull-request'),
 
   fetchGhReleaseAsset:
-    pinAction.new('dsaltares/fetch-gh-release-asset', 'master'),
+    pinLatestAction.new('dsaltares/fetch-gh-release-asset'),
 
 
   tankaExporter:
