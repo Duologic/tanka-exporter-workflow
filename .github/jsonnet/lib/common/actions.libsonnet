@@ -55,7 +55,7 @@ local pinLatestAction = pinAction.latest(latestVersions);
     pinLatestAction.new('thollander/actions-comment-pull-request'),
 
   fetchGhReleaseAsset:
-    pinLatestAction.new('dsaltares/fetch-gh-release-asset'),
+    pinAction.new('dsaltares/fetch-gh-release-asset', 'master'),
 
 
   tankaExporter:
