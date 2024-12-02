@@ -1,6 +1,6 @@
 local common = import 'common/main.libsonnet';
 
-common.fetchGitHubRelease.generateAction(
+common.fetchGitHubRelease.generateRawAction(
   slug='jrsonnet-install',
   repo='CertainLach/jrsonnet',
   defaultVersion='0.5.0-pre96-test',

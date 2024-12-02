@@ -3,27 +3,59 @@ name: Install jrsonnet
 description: Install jrsonnet from the GitHub releases
 
 inputs:
+  file:
+    default: jrsonnet-linux-amd64
+    description: The name of the file to be downloaded.
+    required: true
+  repo:
+    default: CertainLach/jrsonnet
+    description: Repository to pull the release from
+    required: true
+  target-file:
+    default: jrsonnet
+    description: Target filename for binary.
+    required: true
+  target-path:
+    default: "${{ github.workspace }}/bin"
+    description: Target path for binary.
+    required: true
   version:
     default: 0.5.0-pre96-test
-    description: Version of jrsonnet to install.
+    description: Version to install.
+    required: true
 
 runs:
   using: composite
 
   steps:
-    - name: Checkout
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      with:
-        path: _wf
-        ref: "${{ env.action_ref }}"
-        repository: "${{ env.action_repo }}"
-      env:
-        action_ref: "${{ github.action_ref }}"
-        action_repo: "${{ github.action_repository }}"
+    #- name: "Setup Cache for ${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+    #  id: cache
+    #  uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+    #  with:
+    #    key: "${{ github.workflow }}:${{ inputs.file }}:${{ inputs.version }}"
+    #    path: "${{ inputs.target-path }}/${{ inputs.target-file }}"
 
-    - uses: "./_wf/.github/actions/fetch"
+    - name: Fetch Github Release Asset
+      id: fetch_asset
+      if: "steps.cache.outputs.cache-hit != 'true'"
+      uses: dsaltares/fetch-gh-release-asset@master
       with:
-        file: jrsonnet-linux-amd64
-        repo: CertainLach/jrsonnet
-        target-file: jrsonnet
-        version: "${{ inputs.version }}"
+        file: "${{ inputs.file }}"
+        repo: "${{ inputs.repo }}"
+        target: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+        version: "tags/v${{ inputs.version }}"
+
+    - name: "Make ${{ inputs.target-file }} executable"
+      id: make_executable
+      if: "steps.fetch_asset.outcome == 'success'"
+      run: chmod +x $FULL_PATH
+      shell: sh
+      env:
+        FULL_PATH: "${{ inputs.target-path }}/${{ inputs.target-file }}"
+
+    - name: Add binary to path
+      id: add_to_path
+      run: "echo \"$TARGET_PATH\" >> $GITHUB_PATH"
+      shell: sh
+      env:
+        TARGET_PATH: "${{ inputs.target-path }}"
