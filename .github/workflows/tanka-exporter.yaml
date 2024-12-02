@@ -64,7 +64,7 @@ jobs:
           ref: "${{ needs.export.outputs.commit_sha }}"
 
       - name: Run linter
-        uses: hermanbanken/kubeconform-action@v1
+        uses: hermanbanken/kubeconform-action@fd6e8c370a5ab2eb47dee579509a7a0d0ac157c8 # v1
         with:
           args: "-output json ${{ needs.export.outputs.changed_files }}"
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Check if file changed
         id: changed
-        uses: tj-actions/verify-changed-files@v20
+        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20.0.1
         with:
           files: jsonnet
 

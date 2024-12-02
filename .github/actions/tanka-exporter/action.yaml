@@ -48,11 +48,11 @@ runs:
       uses: "./_tanka-exporter-checkout/.github/actions/jrsonnet-install"
 
     - name: Install Jsonnet
-      uses: kobtea/setup-jsonnet-action@v2
+      uses: kobtea/setup-jsonnet-action@6615b2ed7d737e60458271b6ceaff36ea5c81c7f # v2
 
     - name: Find changed paths
       id: filter
-      uses: dorny/paths-filter@v3
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
       with:
         filters: |
           "addedModifiedJsonnet":
@@ -162,7 +162,7 @@ runs:
 
     - name: Check if manifests changed
       id: changed
-      uses: tj-actions/verify-changed-files@v20
+      uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20.0.1
       with:
         path: "${{ inputs.target-repository }}"
 
@@ -216,7 +216,7 @@ runs:
 
     - name: Make no-op comment
       if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed != 'true' }}"
-      uses: thollander/actions-comment-pull-request@v2
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
       with:
         comment_tag: "${{ github.workflow }}-difflinks"
         message: No changes
@@ -224,7 +224,7 @@ runs:
 
     - name: Make changes comment
       if: "${{ github.event_name == 'pull_request' && steps.changed.outputs.files_changed == 'true' }}"
-      uses: thollander/actions-comment-pull-request@v2
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
       with:
         comment_tag: "${{ github.workflow }}-difflinks"
         message: |
