@@ -24,18 +24,6 @@
           )
           + self.action[2:],
     },
-
-    fromFilenae(filename)::
-      self.new(
-        filename[
-          :std.length(filename) -
-           if std.endsWith(filename, '/action.yaml')
-           then std.length('/action.yaml')
-           else if std.endsWith(filename, '/action.yml')
-           then std.length('/action.yml')
-           else ''
-        ]
-      ),
   },
 
   latest(latestVersions): {
@@ -44,21 +32,18 @@
         function(s)
           s.repo == repo,
         latestVersions
-      )[0],
+      ),
 
     new(action, repo=action):
-      local latest = findLatestVersion(repo);
+      local found = findLatestVersion(repo);
+      local latest =
+        if std.length(found) != 0
+        then found[0]
+        else { sha: 'TBD', tag: 'TBD' };
       root.new(action, latest.sha)
       + {
-        local this = self,
-
         repo: repo,
         tag: latest.tag,
-
-        comment:: {
-          needle: 'uses: ' + this.asUses(),
-          text: this.tag,
-        },
       },
   },
 }
